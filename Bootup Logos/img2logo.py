@@ -2,6 +2,7 @@
 # coding=utf-8
 from __future__ import division
 import argparse
+import copy
 import os, sys
 
 from output_hex import HexOutput
@@ -40,6 +41,137 @@ class PinecilSettings:
     DFU_PINECIL_PRODUCT = 0x0189
 
 
+def still_image_to_bytes(
+    image: Image, negative: bool, dither: bool, threshold: int, preview_filename
+):
+    # convert to luminance
+    # do even if already black/white because PIL can't invert 1-bit so
+    #   can't just pass thru in case --negative flag
+    # also resizing works better in luminance than black/white
+    # also no information loss converting black/white to grayscale
+    if image.mode != "L":
+        image = image.convert("L")
+    # Resize to lcd size using bicubic sampling
+    if image.size != (LCD_WIDTH, LCD_HEIGHT):
+        image = image.resize((LCD_WIDTH, LCD_HEIGHT), Image.BICUBIC)
+
+    if negative:
+        image = ImageOps.invert(image)
+        threshold = 255 - threshold  # have to invert threshold as well
+
+    if dither:
+        image = image.convert("1")
+    else:
+        image = image.point(lambda pixel: 0 if pixel < threshold else 1, "1")
+
+    if preview_filename:
+        image.save(preview_filename)
+    # pad to this size (also will be repeated in output Intel hex file)
+    data = [0] * LCD_PAGE_SIZE
+
+    # magic/required header in endian-reverse byte order
+    data[0] = 0x55
+    data[1] = 0xAA
+    data[2] = 0x0D
+    data[3] = 0xF0
+
+    # convert to  LCD format
+    for ndx in range(LCD_WIDTH * 16 // 8):
+        bottom_half_offset = 0 if ndx < LCD_WIDTH else 8
+        byte = 0
+        for y in range(8):
+            if image.getpixel((ndx % LCD_WIDTH, y + bottom_half_offset)):
+                byte |= 1 << y
+        # store in endian-reversed byte order
+        data[4 + ndx + (1 if ndx % 2 == 0 else -1)] = byte
+    return data
+
+
+def animated_image_to_bytes(
+    imageIn: Image, negative: bool, dither: bool, threshold: int
+):
+    """
+    Convert the gif into our best effort startup animation
+    We are delta-encoding on a byte by byte basis
+
+    So we convert every frame into its binary representation
+    The compare these to figure out the encoding
+
+    The naïve implementation would save the frame 5 times
+    But if we delta encode; we can make far more frames of animation for _some_ types of animations.
+    This means reveals are better than moves.
+    Data is stored in the byte blobs, so if you change one pixel in upper or lower row, changing another pixel in that column on that row is "free"
+    """
+    frameData = []
+    frameTimings = []
+    for framenum in range(0, imageIn.n_frames):
+        print(f"Frame {framenum}")
+        imageIn.seek(framenum)
+        image = imageIn
+        if image.mode != "L":
+            image = image.convert("L")
+        # Resize to lcd size using bicubic sampling
+        if image.size != (LCD_WIDTH, LCD_HEIGHT):
+            image = image.resize((LCD_WIDTH, LCD_HEIGHT), Image.BICUBIC)
+
+        if negative:
+            image = ImageOps.invert(image)
+            threshold = 255 - threshold  # have to invert threshold as well
+
+        if dither:
+            image = image.convert("1")
+        else:
+            image = image.point(lambda pixel: 0 if pixel < threshold else 1, "1")
+
+        frameb = [0] * LCD_WIDTH * (LCD_HEIGHT // 8)
+        for ndx in range(LCD_WIDTH * 16 // 8):
+            bottom_half_offset = 0 if ndx < LCD_WIDTH else 8
+            byte = 0
+            for y in range(8):
+                if image.getpixel((ndx % LCD_WIDTH, y + bottom_half_offset)):
+                    byte |= 1 << y
+            # store in endian-reversed byte order
+            frameb[ndx] = byte
+        frameData.append(frameb)
+        frameDuration_ms = image.info["duration"]
+        if frameDuration_ms > 255:
+            frameDuration_ms = 255
+        frameTimings.append(frameDuration_ms)
+    print(f"Found {len(frameTimings)} frames")
+    # We have no mangled the image into our frambuffers
+    # Now create the "deltas" for each frame
+    frameDeltas = [[]]
+    for frame in range(1, len(frameData)):
+        damage = []
+        for i in range(0, len(frameData[frame])):
+            if frameData[frame][i] != frameData[frame - 1][i]:
+                damage.append(i)
+                damage.append(frameData[frame][i])
+        frameDeltas.append(damage)
+        print(damage)
+    # Now we can build our output data blob
+    # First we always start with a full first frame; future optimisation to check if we should or not
+    outputData = [0xAA, 0xBB, frameTimings[0]]
+    outputData.extend(frameData[0])
+    # Now we delta encode all following frames
+
+    """
+    Format for each frame block is:
+    [duration in ms, max of 255][length][ [delta block][delta block][delta block][delta block] ]
+    Where [delta block] is just [index,new value]
+    """
+    for frame in range(1, len(frameData)):
+        outputData.append(frameTimings[frame])
+        outputData.append(len(frameDeltas[frame]))
+        outputData.extend(frameDeltas[frame])
+
+    if len(outputData) > 1024:
+        raise Exception(
+            f"Too many frames, required too much space. You used {len(outputData)} of 1024 bytes"
+        )
+    return outputData
+
+
 def img2hex(
     input_filename,
     preview_filename=None,
@@ -69,29 +201,6 @@ def img2hex(
     except BaseException as e:
         raise IOError('error reading image file "{}": {}'.format(input_filename, e))
 
-    # convert to luminance
-    # do even if already black/white because PIL can't invert 1-bit so
-    #   can't just pass thru in case --negative flag
-    # also resizing works better in luminance than black/white
-    # also no information loss converting black/white to grayscale
-    if image.mode != "L":
-        image = image.convert("L")
-    # Resize to lcd size using bicubic sampling
-    if image.size != (LCD_WIDTH, LCD_HEIGHT):
-        image = image.resize((LCD_WIDTH, LCD_HEIGHT), Image.BICUBIC)
-
-    if negative:
-        image = ImageOps.invert(image)
-        threshold = 255 - threshold  # have to invert threshold as well
-
-    if dither:
-        image = image.convert("1")
-    else:
-        image = image.point(lambda pixel: 0 if pixel < threshold else 1, "1")
-
-    if preview_filename:
-        image.save(preview_filename)
-
     """ DEBUG
     for row in range(LCD_HEIGHT):
         for column in range(LCD_WIDTH):
@@ -99,25 +208,13 @@ def img2hex(
             else:                             sys.stderr.write('0')
         sys.stderr.write('\n')
     """
+    if getattr(image, "is_animated", False):
+        data = animated_image_to_bytes(image, negative, dither, threshold)
+    else:
+        data = still_image_to_bytes(
+            image, negative, dither, threshold, preview_filename
+        )
 
-    # pad to this size (also will be repeated in output Intel hex file)
-    data = [0] * LCD_PAGE_SIZE
-
-    # magic/required header in endian-reverse byte order
-    data[0] = 0x55
-    data[1] = 0xAA
-    data[2] = 0x0D
-    data[3] = 0xF0
-
-    # convert to  LCD format
-    for ndx in range(LCD_WIDTH * 16 // 8):
-        bottom_half_offset = 0 if ndx < LCD_WIDTH else 8
-        byte = 0
-        for y in range(8):
-            if image.getpixel((ndx % LCD_WIDTH, y + bottom_half_offset)):
-                byte |= 1 << y
-        # store in endian-reversed byte order
-        data[4 + ndx + (1 if ndx % 2 == 0 else -1)] = byte
     deviceSettings = MiniwareSettings
     if isPinecil:
         deviceSettings = PinecilSettings
@@ -218,16 +315,12 @@ if __name__ == "__main__":
         )
         sys.exit(1)
 
-    try:
-        img2hex(
-            args.input_filename,
-            args.preview,
-            args.threshold,
-            args.dither,
-            args.negative,
-            output_filename_base=args.output_filename,
-            isPinecil=args.pinecil,
-        )
-    except BaseException as error:
-        sys.stderr.write("Error converting file: {}\n".format(error))
-        sys.exit(1)
+    img2hex(
+        args.input_filename,
+        args.preview,
+        args.threshold,
+        args.dither,
+        args.negative,
+        output_filename_base=args.output_filename,
+        isPinecil=args.pinecil,
+    )

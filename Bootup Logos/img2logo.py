@@ -153,7 +153,7 @@ def parse_commandline():
     parser.add_argument("output_filename", help="output file base name")
 
     parser.add_argument(
-        "-p",
+        "-P",
         "--preview",
         help="filename of image preview",
     )
@@ -186,6 +186,9 @@ def parse_commandline():
         "-f", "--force", action="store_true", help="force overwriting of existing files"
     )
 
+    parser.add_argument(
+        "-p", "--pinecil", action="store_true", help="generate files for Pinecil"
+    )
     parser.add_argument(
         "-v",
         "--version",
@@ -223,7 +226,7 @@ if __name__ == "__main__":
             args.dither,
             args.negative,
             output_filename_base=args.output_filename,
-            isPinecil=False,
+            isPinecil=args.pinecil,
         )
     except BaseException as error:
         sys.stderr.write("Error converting file: {}\n".format(error))

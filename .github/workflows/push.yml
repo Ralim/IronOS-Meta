@@ -1,0 +1,43 @@
+name: CI
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-20.04
+    container:
+      image: alpine:3.15
+    strategy:
+      matrix:
+        include:
+          - args: ""
+            model: "miniware"
+          - args: "-p"
+            model: "pinecil"
+      fail-fast: true
+
+    steps:
+      - name: Install dependencies (apk)
+        run: apk add --no-cache git python3 py3-pip
+
+      - name: Install dependencies (py)
+        run: pip3 install IntelHex
+
+      - uses: actions/checkout@v2
+        with:
+          submodules: true
+
+      - name: prep
+        run: mkdir -p /tmp/${{ matrix.model }}
+
+      - name: build test
+        run: cd Bootup\ Logos && python3 img2logo.py ${{matrix.args}} Images/IronOS.gif /tmp/${{ matrix.model }}/IronOS.gif
+
+      - name: Archive artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: ${{ matrix.model }}
+          path: |
+            /tmp/${{ matrix.model }}/*.hex
+            /tmp/${{ matrix.model }}/*.dfu
+          if-no-files-found: error

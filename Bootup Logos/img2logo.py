@@ -69,8 +69,8 @@ def still_image_to_bytes(
     # pad to this size (also will be repeated in output Intel hex file)
     data = [0] * LCD_PAGE_SIZE
 
-    # magic/required header in endian-reverse byte order
-    data[0] = 0xAA
+    # magic/required header
+    data[0] = 0xAA  # Indicates programmed page
     data[1] = 0xBB
 
     # convert to  LCD format
@@ -109,7 +109,7 @@ def animated_image_to_bytes(
     Data is stored in the byte blobs, so if you change one pixel in upper or lower row, changing another pixel in that column on that row is "free"
     """
     frameData = []
-    frameTimings = []
+    frameTiming = None
     for framenum in range(0, imageIn.n_frames):
         print(f"Frame {framenum}")
         imageIn.seek(framenum)
@@ -139,11 +139,13 @@ def animated_image_to_bytes(
             # store in endian-reversed byte order
             frameb[ndx] = byte
         frameData.append(frameb)
+        # Store inter-frame duration
         frameDuration_ms = image.info["duration"]
         if frameDuration_ms > 255:
             frameDuration_ms = 255
-        frameTimings.append(frameDuration_ms)
-    print(f"Found {len(frameTimings)} frames")
+        if frameTiming is None:
+            frameTiming = frameDuration_ms
+    print(f"Found {len(frameData)} frames")
     # We have no mangled the image into our frambuffers
     # Now create the "deltas" for each frame
     frameDeltas = [[]]
@@ -160,7 +162,7 @@ def animated_image_to_bytes(
     bytes_black = sum([1 if x == 0 else 0 for x in frameData[0]])
     if bytes_black > 96:
         # It will take less room to delta encode first frame
-        outputData = [0xAA, 0xCC, frameTimings[0]]
+        outputData = [0xAA, 0xCC, frameTiming]
         delta = calculate_frame_delta_encode([0x00] * (LCD_NUM_BYTES), frameData[0])
         if len(delta) > (LCD_NUM_BYTES / 2):
             raise Exception("BUG: Shouldn't delta encode more than 50%% of the screen")
@@ -168,7 +170,7 @@ def animated_image_to_bytes(
         outputData.extend(delta)
         print("delta encoded first frame")
     else:
-        outputData = [0xAA, 0xDD, frameTimings[0]]
+        outputData = [0xAA, 0xDD, frameTiming]
         outputData.extend(frameData[0])
         print("Used full encoded first frame")
 
@@ -176,14 +178,14 @@ def animated_image_to_bytes(
 
     """
     Format for each frame block is:
-    [duration in ms, max of 255][length][ [delta block][delta block][delta block][delta block] ]
+    [length][ [delta block][delta block][delta block][delta block] ]
     Where [delta block] is just [index,new value]
     
     OR
-    [duration in ms, max of 255][0xFF][Full frame data]
+    [0xFF][Full frame data]
     """
     for frame in range(1, len(frameData)):
-        data = [frameTimings[frame]]
+        data = []
         if len(frameDeltas[frame]) > LCD_NUM_BYTES:
             data.append(0xFF)
             data.extend(frameData[frame])
@@ -272,7 +274,7 @@ def img2hex(
 def parse_commandline():
     parser = argparse.ArgumentParser(
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
-        description="Convert image file for display on  LCD " "at startup",
+        description="Convert image file for display on IronOS OLED at startup",
     )
 
     def zero_to_255(text):
@@ -318,6 +320,12 @@ def parse_commandline():
     parser.add_argument(
         "-f", "--force", action="store_true", help="force overwriting of existing files"
     )
+    parser.add_argument(
+        "-E",
+        "--erase",
+        action="store_true",
+        help="generate a logo erase file instead of a logo",
+    )
 
     parser.add_argument(
         "-p", "--pinecil", action="store_true", help="generate files for Pinecil"
@@ -352,11 +360,12 @@ if __name__ == "__main__":
         sys.exit(1)
 
     img2hex(
-        args.input_filename,
-        args.preview,
-        args.threshold,
-        args.dither,
-        args.negative,
+        input_filename=args.input_filename,
+        preview_filename=args.preview,
+        threshold=args.threshold,
+        dither=args.dither,
+        negative=args.negative,
+        make_erase_image=args.erase,
         output_filename_base=args.output_filename,
         isPinecil=args.pinecil,
     )

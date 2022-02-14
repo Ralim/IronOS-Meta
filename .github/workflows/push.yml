@@ -18,7 +18,7 @@ jobs:
 
     steps:
       - name: Install dependencies (apk)
-        run: apk add --no-cache git python3 py3-pip
+        run: apk add --no-cache git python3 py3-pip zlib
 
       - name: Install dependencies (py)
         run: pip3 install pillow

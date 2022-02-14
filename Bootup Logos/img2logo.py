@@ -70,21 +70,27 @@ def still_image_to_bytes(
     data = [0] * LCD_PAGE_SIZE
 
     # magic/required header in endian-reverse byte order
-    data[0] = 0x55
-    data[1] = 0xAA
-    data[2] = 0x0D
-    data[3] = 0xF0
+    data[0] = 0xAA
+    data[1] = 0xBB
 
     # convert to  LCD format
-    for ndx in range(LCD_WIDTH * 16 // 8):
+    for ndx in range(LCD_WIDTH * LCD_HEIGHT // 8):
         bottom_half_offset = 0 if ndx < LCD_WIDTH else 8
         byte = 0
         for y in range(8):
             if image.getpixel((ndx % LCD_WIDTH, y + bottom_half_offset)):
                 byte |= 1 << y
-        # store in endian-reversed byte order
-        data[4 + ndx + (1 if ndx % 2 == 0 else -1)] = byte
+        data[2 + ndx] = byte
     return data
+
+
+def calculate_frame_delta_encode(previous_frame: bytearray, this_frame: bytearray):
+    damage = []
+    for i in range(0, len(this_frame)):
+        if this_frame[i] != previous_frame[i]:
+            damage.append(i)
+            damage.append(this_frame[i])
+    return damage
 
 
 def animated_image_to_bytes(
@@ -124,7 +130,7 @@ def animated_image_to_bytes(
             image = image.point(lambda pixel: 0 if pixel < threshold else 1, "1")
 
         frameb = [0] * LCD_WIDTH * (LCD_HEIGHT // 8)
-        for ndx in range(LCD_WIDTH * 16 // 8):
+        for ndx in range(LCD_WIDTH * LCD_HEIGHT // 8):
             bottom_half_offset = 0 if ndx < LCD_WIDTH else 8
             byte = 0
             for y in range(8):
@@ -141,34 +147,61 @@ def animated_image_to_bytes(
     # We have no mangled the image into our frambuffers
     # Now create the "deltas" for each frame
     frameDeltas = [[]]
+
     for frame in range(1, len(frameData)):
-        damage = []
-        for i in range(0, len(frameData[frame])):
-            if frameData[frame][i] != frameData[frame - 1][i]:
-                damage.append(i)
-                damage.append(frameData[frame][i])
-        frameDeltas.append(damage)
-        print(damage)
+
+        frameDeltas.append(
+            calculate_frame_delta_encode(frameData[frame - 1], frameData[frame])
+        )
+
     # Now we can build our output data blob
     # First we always start with a full first frame; future optimisation to check if we should or not
-    outputData = [0xAA, 0xBB, frameTimings[0]]
-    outputData.extend(frameData[0])
+
+    bytes_black = sum([1 if x == 0 else 0 for x in frameData[0]])
+    if bytes_black > 96:
+        # It will take less room to delta encode first frame
+        outputData = [0xAA, 0xCC, frameTimings[0]]
+        delta = calculate_frame_delta_encode([0x00] * (LCD_NUM_BYTES), frameData[0])
+        if len(delta) > (LCD_NUM_BYTES / 2):
+            raise Exception("BUG: Shouldn't delta encode more than 50%% of the screen")
+        outputData.append(len(delta))
+        outputData.extend(delta)
+        print("delta encoded first frame")
+    else:
+        outputData = [0xAA, 0xDD, frameTimings[0]]
+        outputData.extend(frameData[0])
+        print("Used full encoded first frame")
+
     # Now we delta encode all following frames
 
     """
     Format for each frame block is:
     [duration in ms, max of 255][length][ [delta block][delta block][delta block][delta block] ]
     Where [delta block] is just [index,new value]
+    
+    OR
+    [duration in ms, max of 255][0xFF][Full frame data]
     """
     for frame in range(1, len(frameData)):
-        outputData.append(frameTimings[frame])
-        outputData.append(len(frameDeltas[frame]))
-        outputData.extend(frameDeltas[frame])
+        data = [frameTimings[frame]]
+        if len(frameDeltas[frame]) > LCD_NUM_BYTES:
+            data.append(0xFF)
+            data.extend(frameData[frame])
+            print(f"Frame {frame} full encodes to {len(data)} bytes")
+        else:
+            data.append(len(frameDeltas[frame]))
+            data.extend(frameDeltas[frame])
 
-    if len(outputData) > 1024:
-        raise Exception(
-            f"Too many frames, required too much space. You used {len(outputData)} of 1024 bytes"
-        )
+            print(f"Frame {frame} delta encodes to {len(data)} bytes")
+        if len(outputData) + len(data) > 1024:
+            print(
+                f"Animation truncated, frame {frame} and onwards out of {len(frameData)} discarded"
+            )
+            break
+        outputData.extend(data)
+    if len(outputData) < 1024:
+        pad = [0] * (1024 - len(outputData))
+        outputData.extend(pad)
     return outputData
 
 
@@ -179,6 +212,7 @@ def img2hex(
     dither=False,
     negative=False,
     isPinecil=False,
+    make_erase_image=False,
     output_filename_base="out",
 ):
     """
@@ -204,11 +238,13 @@ def img2hex(
     """ DEBUG
     for row in range(LCD_HEIGHT):
         for column in range(LCD_WIDTH):
-            if image.getpixel((column, row)): sys.stderr.write('1')
-            else:                             sys.stderr.write('0')
+            if image.getpixel((column, row)): sys.stderr.write('█')
+            else:                             sys.stderr.write(' ')
         sys.stderr.write('\n')
     """
-    if getattr(image, "is_animated", False):
+    if make_erase_image:
+        data = [0xFF] * 1024
+    elif getattr(image, "is_animated", False):
         data = animated_image_to_bytes(image, negative, dither, threshold)
     else:
         data = still_image_to_bytes(

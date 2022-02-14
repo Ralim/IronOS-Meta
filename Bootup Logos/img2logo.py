@@ -193,21 +193,21 @@ def img2hex(
     Optional `negative' inverts black/white regardless of input image type
         or other options.
     """
-
-    try:
-        image = Image.open(input_filename)
-    except BaseException as e:
-        raise IOError('error reading image file "{}": {}'.format(input_filename, e))
-
     if make_erase_image:
         data = [0xFF] * 1024
-    elif getattr(image, "is_animated", False):
-        data = animated_image_to_bytes(image, negative, dither, threshold)
     else:
-        # magic/required header
-        data = [DATA_PROGRAMMED_MARKER, 0x00]  # Timing value of 0
-        image_bytes = still_image_to_bytes(image, negative, dither, threshold, preview_filename)
-        data.extend(get_screen_blob([0] * LCD_NUM_BYTES, image_bytes))
+        try:
+            image = Image.open(input_filename)
+        except BaseException as e:
+            raise IOError('error reading image file "{}": {}'.format(input_filename, e))
+
+        if getattr(image, "is_animated", False):
+            data = animated_image_to_bytes(image, negative, dither, threshold)
+        else:
+            # magic/required header
+            data = [DATA_PROGRAMMED_MARKER, 0x00]  # Timing value of 0
+            image_bytes = still_image_to_bytes(image, negative, dither, threshold, preview_filename)
+            data.extend(get_screen_blob([0] * LCD_NUM_BYTES, image_bytes))
 
     # Pad up to the full page size
     if len(data) < LCD_PAGE_SIZE:

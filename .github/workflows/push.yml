@@ -27,8 +27,11 @@ jobs:
       - name: prep
         run: mkdir -p /tmp/${{ matrix.model }}
 
-      - name: build test
+      - name: build logo's
         run: cd Bootup\ Logos && ./run.sh /tmp/${{ matrix.model }}/ ${{matrix.args}}
+
+      - name: build logo's
+        run: cd Bootup\ Logos && python3 img2logo.py -E dummy.png /tmp/${{ matrix.model }}/
 
       - name: Archive artifacts
         uses: actions/upload-artifact@v2

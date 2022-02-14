@@ -131,7 +131,6 @@ def animated_image_to_bytes(imageIn: Image, negative: bool, dither: bool, thresh
     frameData = []
     frameTiming = None
     for framenum in range(0, imageIn.n_frames):
-        print(f"Frame {framenum}")
         imageIn.seek(framenum)
         image = imageIn
 
@@ -206,8 +205,9 @@ def img2hex(
         data = animated_image_to_bytes(image, negative, dither, threshold)
     else:
         # magic/required header
-        data = [DATA_PROGRAMMED_MARKER, 0xBB]
-        data.extend(still_image_to_bytes(image, negative, dither, threshold, preview_filename))
+        data = [DATA_PROGRAMMED_MARKER, 0x00]  # Timing value of 0
+        image_bytes = still_image_to_bytes(image, negative, dither, threshold, preview_filename)
+        data.extend(get_screen_blob([0] * LCD_NUM_BYTES, image_bytes))
 
     # Pad up to the full page size
     if len(data) < LCD_PAGE_SIZE:
@@ -217,8 +217,9 @@ def img2hex(
     if isPinecil:
         deviceSettings = PinecilSettings
     # Generate both possible outputs
+    output_name = output_filename_base + os.path.basename(input_filename)
     DFUOutput.writeFile(
-        output_filename_base + ".dfu",
+        output_name + ".dfu",
         data,
         deviceSettings.IMAGE_ADDRESS,
         deviceSettings.DFU_TARGET_NAME,
@@ -226,7 +227,7 @@ def img2hex(
         deviceSettings.DFU_PINECIL_PRODUCT,
         deviceSettings.DFU_PINECIL_VENDOR,
     )
-    HexOutput.writeFile(output_filename_base + ".hex", data, deviceSettings.IMAGE_ADDRESS)
+    HexOutput.writeFile(output_name + ".hex", data, deviceSettings.IMAGE_ADDRESS)
 
 
 def parse_commandline():
@@ -273,7 +274,6 @@ def parse_commandline():
         help="use dithering (speckling) to convert gray or " "color to black and white",
     )
 
-    parser.add_argument("-f", "--force", action="store_true", help="force overwriting of existing files")
     parser.add_argument(
         "-E",
         "--erase",
@@ -297,21 +297,17 @@ if __name__ == "__main__":
 
     args = parse_commandline()
 
-    if os.path.exists(args.output_filename) and not args.force:
-        sys.stderr.write('Won\'t overwrite existing file "{}" (use --force ' "option to override)\n".format(args.output_filename))
-        sys.exit(1)
-
     if args.preview and os.path.exists(args.preview) and not args.force:
         sys.stderr.write('Won\'t overwrite existing file "{}" (use --force ' "option to override)\n".format(args.preview))
         sys.exit(1)
 
     img2hex(
         input_filename=args.input_filename,
+        output_filename_base=args.output_filename,
         preview_filename=args.preview,
         threshold=args.threshold,
         dither=args.dither,
         negative=args.negative,
         make_erase_image=args.erase,
-        output_filename_base=args.output_filename,
         isPinecil=args.pinecil,
     )

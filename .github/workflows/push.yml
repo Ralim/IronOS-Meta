@@ -28,7 +28,7 @@ jobs:
         run: mkdir -p /tmp/${{ matrix.model }}
 
       - name: build test
-        run: cd Bootup\ Logos && python3 img2logo.py ${{matrix.args}} Images/IronOS.gif /tmp/${{ matrix.model }}/IronOS.gif
+        run: cd Bootup\ Logos && ./run.sh /tmp/${{ matrix.model }}/ ${{matrix.args}}
 
       - name: Archive artifacts
         uses: actions/upload-artifact@v2

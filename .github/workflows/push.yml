@@ -21,7 +21,7 @@ jobs:
         run: apk add --no-cache git python3 py3-pip
 
       - name: Install dependencies (py)
-        run: pip3 install IntelHex
+        run: pip3 install pillow
 
       - uses: actions/checkout@v2
         with:

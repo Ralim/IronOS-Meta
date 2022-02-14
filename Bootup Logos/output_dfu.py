@@ -14,17 +14,14 @@ class DFUOutput:
     def writeFile(
         cls,
         file_name: str,
-        data: bytearray,
+        data_in: bytearray,
         data_address: int,
         tagetName: str,
         alt_number: int,
         product_id: int,
         vendor_id: int,
     ):
-        data: bytearray = b""
-
-        for byte in data:
-            data += byte.to_bytes(1, byteorder="big")
+        data: bytearray = bytearray(data_in)
 
         data = struct.pack("<2I", data_address, len(data)) + data
         data = (

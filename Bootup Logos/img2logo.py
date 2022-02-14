@@ -11,11 +11,7 @@ from output_dfu import DFUOutput
 try:
     from PIL import Image, ImageOps
 except ImportError as error:
-    raise ImportError(
-        "{}: {} requres Python Imaging Library (PIL). "
-        "Install with `pip` (pip3 install pillow) or OS-specific package "
-        "management tool.".format(error, sys.argv[0])
-    )
+    raise ImportError("{}: {} requres Python Imaging Library (PIL). " "Install with `pip` (pip3 install pillow) or OS-specific package " "management tool.".format(error, sys.argv[0]))
 
 VERSION_STRING = "1.0"
 
@@ -23,6 +19,9 @@ LCD_WIDTH = 96
 LCD_HEIGHT = 16
 LCD_NUM_BYTES = LCD_WIDTH * LCD_HEIGHT // 8
 LCD_PAGE_SIZE = 1024
+
+DATA_PROGRAMMED_MARKER = 0xAA
+FULL_FRAME_MARKER = 0xFF
 
 
 class MiniwareSettings:
@@ -41,9 +40,7 @@ class PinecilSettings:
     DFU_PINECIL_PRODUCT = 0x0189
 
 
-def still_image_to_bytes(
-    image: Image, negative: bool, dither: bool, threshold: int, preview_filename
-):
+def still_image_to_bytes(image: Image, negative: bool, dither: bool, threshold: int, preview_filename):
     # convert to luminance
     # do even if already black/white because PIL can't invert 1-bit so
     #   can't just pass thru in case --negative flag
@@ -67,11 +64,7 @@ def still_image_to_bytes(
     if preview_filename:
         image.save(preview_filename)
     # pad to this size (also will be repeated in output Intel hex file)
-    data = [0] * LCD_PAGE_SIZE
-
-    # magic/required header
-    data[0] = 0xAA  # Indicates programmed page
-    data[1] = 0xBB
+    data = []
 
     # convert to  LCD format
     for ndx in range(LCD_WIDTH * LCD_HEIGHT // 8):
@@ -80,7 +73,15 @@ def still_image_to_bytes(
         for y in range(8):
             if image.getpixel((ndx % LCD_WIDTH, y + bottom_half_offset)):
                 byte |= 1 << y
-        data[2 + ndx] = byte
+        data.append(byte)
+
+    """ DEBUG
+    for row in range(LCD_HEIGHT):
+        for column in range(LCD_WIDTH):
+            if image.getpixel((column, row)): sys.stderr.write('█')
+            else:                             sys.stderr.write(' ')
+        sys.stderr.write('\n')
+    """
     return data
 
 
@@ -93,9 +94,27 @@ def calculate_frame_delta_encode(previous_frame: bytearray, this_frame: bytearra
     return damage
 
 
-def animated_image_to_bytes(
-    imageIn: Image, negative: bool, dither: bool, threshold: int
-):
+def get_screen_blob(previous_frame: bytearray, this_frame: bytearray):
+    """
+    Given two screens, returns the smaller representation
+    Either a full screen update
+    OR
+    A delta encoded form
+    """
+    outputData = []
+    delta = calculate_frame_delta_encode(previous_frame, this_frame)
+    if len(delta) < (len(this_frame)):
+        outputData.append(len(delta))
+        outputData.extend(delta)
+        # print("delta encoded frame")
+    else:
+        outputData.append(FULL_FRAME_MARKER)
+        outputData.extend(this_frame)
+        # print("full encoded frame")
+    return outputData
+
+
+def animated_image_to_bytes(imageIn: Image, negative: bool, dither: bool, threshold: int):
     """
     Convert the gif into our best effort startup animation
     We are delta-encoding on a byte by byte basis
@@ -106,75 +125,32 @@ def animated_image_to_bytes(
     The naïve implementation would save the frame 5 times
     But if we delta encode; we can make far more frames of animation for _some_ types of animations.
     This means reveals are better than moves.
-    Data is stored in the byte blobs, so if you change one pixel in upper or lower row, changing another pixel in that column on that row is "free"
+    Data is stored in the byte blobs, so if you change one pixel, changing another pixel in that column on that row is "free"
     """
+
     frameData = []
     frameTiming = None
     for framenum in range(0, imageIn.n_frames):
         print(f"Frame {framenum}")
         imageIn.seek(framenum)
         image = imageIn
-        if image.mode != "L":
-            image = image.convert("L")
-        # Resize to lcd size using bicubic sampling
-        if image.size != (LCD_WIDTH, LCD_HEIGHT):
-            image = image.resize((LCD_WIDTH, LCD_HEIGHT), Image.BICUBIC)
 
-        if negative:
-            image = ImageOps.invert(image)
-            threshold = 255 - threshold  # have to invert threshold as well
-
-        if dither:
-            image = image.convert("1")
-        else:
-            image = image.point(lambda pixel: 0 if pixel < threshold else 1, "1")
-
-        frameb = [0] * LCD_WIDTH * (LCD_HEIGHT // 8)
-        for ndx in range(LCD_WIDTH * LCD_HEIGHT // 8):
-            bottom_half_offset = 0 if ndx < LCD_WIDTH else 8
-            byte = 0
-            for y in range(8):
-                if image.getpixel((ndx % LCD_WIDTH, y + bottom_half_offset)):
-                    byte |= 1 << y
-            # store in endian-reversed byte order
-            frameb[ndx] = byte
+        frameb = still_image_to_bytes(image, negative, dither, threshold, None)
         frameData.append(frameb)
         # Store inter-frame duration
         frameDuration_ms = image.info["duration"]
         if frameDuration_ms > 255:
             frameDuration_ms = 255
-        if frameTiming is None:
+        if frameTiming is None or frameTiming == 0:
             frameTiming = frameDuration_ms
-    print(f"Found {len(frameData)} frames")
+    print(f"Found {len(frameData)} frames, interval {frameTiming}ms")
     # We have no mangled the image into our frambuffers
-    # Now create the "deltas" for each frame
-    frameDeltas = [[]]
-
-    for frame in range(1, len(frameData)):
-
-        frameDeltas.append(
-            calculate_frame_delta_encode(frameData[frame - 1], frameData[frame])
-        )
 
     # Now we can build our output data blob
     # First we always start with a full first frame; future optimisation to check if we should or not
-
-    bytes_black = sum([1 if x == 0 else 0 for x in frameData[0]])
-    if bytes_black > 96:
-        # It will take less room to delta encode first frame
-        outputData = [0xAA, 0xCC, frameTiming]
-        delta = calculate_frame_delta_encode([0x00] * (LCD_NUM_BYTES), frameData[0])
-        if len(delta) > (LCD_NUM_BYTES / 2):
-            raise Exception("BUG: Shouldn't delta encode more than 50%% of the screen")
-        outputData.append(len(delta))
-        outputData.extend(delta)
-        print("delta encoded first frame")
-    else:
-        outputData = [0xAA, 0xDD, frameTiming]
-        outputData.extend(frameData[0])
-        print("Used full encoded first frame")
-
-    # Now we delta encode all following frames
+    outputData = [DATA_PROGRAMMED_MARKER]
+    outputData.append(frameTiming)
+    outputData.extend(get_screen_blob([0x00] * (LCD_NUM_BYTES), frameData[0]))
 
     """
     Format for each frame block is:
@@ -184,26 +160,13 @@ def animated_image_to_bytes(
     OR
     [0xFF][Full frame data]
     """
-    for frame in range(1, len(frameData)):
-        data = []
-        if len(frameDeltas[frame]) > LCD_NUM_BYTES:
-            data.append(0xFF)
-            data.extend(frameData[frame])
-            print(f"Frame {frame} full encodes to {len(data)} bytes")
-        else:
-            data.append(len(frameDeltas[frame]))
-            data.extend(frameDeltas[frame])
-
-            print(f"Frame {frame} delta encodes to {len(data)} bytes")
-        if len(outputData) + len(data) > 1024:
-            print(
-                f"Animation truncated, frame {frame} and onwards out of {len(frameData)} discarded"
-            )
+    for id in range(1, len(frameData)):
+        frameBlob = get_screen_blob(frameData[id - 1], frameData[id])
+        if (len(outputData) + len(frameBlob)) > LCD_PAGE_SIZE:
+            print(f"Truncating animation after {id} frames as we are out of space")
             break
-        outputData.extend(data)
-    if len(outputData) < 1024:
-        pad = [0] * (1024 - len(outputData))
-        outputData.extend(pad)
+        print(f"Frame {id} encoded to {len(frameBlob)} bytes")
+        outputData.extend(frameBlob)
     return outputData
 
 
@@ -237,22 +200,19 @@ def img2hex(
     except BaseException as e:
         raise IOError('error reading image file "{}": {}'.format(input_filename, e))
 
-    """ DEBUG
-    for row in range(LCD_HEIGHT):
-        for column in range(LCD_WIDTH):
-            if image.getpixel((column, row)): sys.stderr.write('█')
-            else:                             sys.stderr.write(' ')
-        sys.stderr.write('\n')
-    """
     if make_erase_image:
         data = [0xFF] * 1024
     elif getattr(image, "is_animated", False):
         data = animated_image_to_bytes(image, negative, dither, threshold)
     else:
-        data = still_image_to_bytes(
-            image, negative, dither, threshold, preview_filename
-        )
+        # magic/required header
+        data = [DATA_PROGRAMMED_MARKER, 0xBB]
+        data.extend(still_image_to_bytes(image, negative, dither, threshold, preview_filename))
 
+    # Pad up to the full page size
+    if len(data) < LCD_PAGE_SIZE:
+        pad = [0] * (LCD_PAGE_SIZE - len(data))
+        data.extend(pad)
     deviceSettings = MiniwareSettings
     if isPinecil:
         deviceSettings = PinecilSettings
@@ -266,9 +226,7 @@ def img2hex(
         deviceSettings.DFU_PINECIL_PRODUCT,
         deviceSettings.DFU_PINECIL_VENDOR,
     )
-    HexOutput.writeFile(
-        output_filename_base + ".hex", data, deviceSettings.IMAGE_ADDRESS
-    )
+    HexOutput.writeFile(output_filename_base + ".hex", data, deviceSettings.IMAGE_ADDRESS)
 
 
 def parse_commandline():
@@ -305,9 +263,7 @@ def parse_commandline():
         "--threshold",
         type=zero_to_255,
         default=128,
-        help="0 to 255: gray (or color converted to gray) "
-        "above this becomes white, below becomes black; "
-        "ignored if using --dither",
+        help="0 to 255: gray (or color converted to gray) " "above this becomes white, below becomes black; " "ignored if using --dither",
     )
 
     parser.add_argument(
@@ -317,9 +273,7 @@ def parse_commandline():
         help="use dithering (speckling) to convert gray or " "color to black and white",
     )
 
-    parser.add_argument(
-        "-f", "--force", action="store_true", help="force overwriting of existing files"
-    )
+    parser.add_argument("-f", "--force", action="store_true", help="force overwriting of existing files")
     parser.add_argument(
         "-E",
         "--erase",
@@ -327,9 +281,7 @@ def parse_commandline():
         help="generate a logo erase file instead of a logo",
     )
 
-    parser.add_argument(
-        "-p", "--pinecil", action="store_true", help="generate files for Pinecil"
-    )
+    parser.add_argument("-p", "--pinecil", action="store_true", help="generate files for Pinecil")
     parser.add_argument(
         "-v",
         "--version",
@@ -346,17 +298,11 @@ if __name__ == "__main__":
     args = parse_commandline()
 
     if os.path.exists(args.output_filename) and not args.force:
-        sys.stderr.write(
-            'Won\'t overwrite existing file "{}" (use --force '
-            "option to override)\n".format(args.output_filename)
-        )
+        sys.stderr.write('Won\'t overwrite existing file "{}" (use --force ' "option to override)\n".format(args.output_filename))
         sys.exit(1)
 
     if args.preview and os.path.exists(args.preview) and not args.force:
-        sys.stderr.write(
-            'Won\'t overwrite existing file "{}" (use --force '
-            "option to override)\n".format(args.preview)
-        )
+        sys.stderr.write('Won\'t overwrite existing file "{}" (use --force ' "option to override)\n".format(args.preview))
         sys.exit(1)
 
     img2hex(

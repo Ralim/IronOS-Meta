@@ -18,10 +18,7 @@ jobs:
 
     steps:
       - name: Install dependencies (apk)
-        run: apk add --no-cache git python3 py3-pip zlib
-
-      - name: Install dependencies (py)
-        run: pip3 install pillow
+        run: apk add --no-cache git python3 py3-pip zlib py3-pillow
 
       - uses: actions/checkout@v2
         with:

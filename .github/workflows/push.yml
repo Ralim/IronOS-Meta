@@ -31,7 +31,7 @@ jobs:
         run: cd Bootup\ Logos && ./run.sh /tmp/${{ matrix.model }}/ ${{matrix.args}}
 
       - name: build logo's
-        run: cd Bootup\ Logos && python3 img2logo.py -E erase_stored_image /tmp/${{ matrix.model }}/
+        run: cd Bootup\ Logos && python3 img2logo.py -E erase_stored_image /tmp/${{ matrix.model }}/ ${{matrix.args}}
 
       - name: Archive artifacts
         uses: actions/upload-artifact@v2

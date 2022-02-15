@@ -10,7 +10,7 @@ jobs:
     strategy:
       matrix:
         include:
-          - args: ""
+          - args: "-m"
             model: "miniware"
           - args: "-p"
             model: "pinecil"

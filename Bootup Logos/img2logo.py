@@ -282,6 +282,7 @@ def parse_commandline():
     )
 
     parser.add_argument("-p", "--pinecil", action="store_true", help="generate files for Pinecil")
+    parser.add_argument("-m", "--miniware", action="store_true", help="generate files for miniware")
     parser.add_argument(
         "-v",
         "--version",
@@ -299,6 +300,10 @@ if __name__ == "__main__":
 
     if args.preview and os.path.exists(args.preview) and not args.force:
         sys.stderr.write('Won\'t overwrite existing file "{}" (use --force ' "option to override)\n".format(args.preview))
+        sys.exit(1)
+
+    if args.miniware == False and args.pinecil == False:
+        sys.stderr.write("You must provide --miniware or --pinecil to select your model")
         sys.exit(1)
 
     img2hex(

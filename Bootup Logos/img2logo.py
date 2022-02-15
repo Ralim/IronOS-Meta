@@ -151,7 +151,7 @@ def animated_image_to_bytes(imageIn: Image, negative: bool, dither: bool, thresh
     outputData.append(frameTiming)
     first_frame = get_screen_blob([0x00] * (LCD_NUM_BYTES), frameData[0])
     outputData.extend(first_frame)
-    print(f"Frame 0 encoded to {len(first_frame)} bytes")
+    print(f"Frame 1 encoded to {len(first_frame)} bytes")
 
     """
     Format for each frame block is:
@@ -164,9 +164,9 @@ def animated_image_to_bytes(imageIn: Image, negative: bool, dither: bool, thresh
     for id in range(1, len(frameData)):
         frameBlob = get_screen_blob(frameData[id - 1], frameData[id])
         if (len(outputData) + len(frameBlob)) > LCD_PAGE_SIZE:
-            print(f"Truncating animation after {id-1} frames as we are out of space")
+            print(f"Truncating animation after {id} frames as we are out of space")
             break
-        print(f"Frame {id} encoded to {len(frameBlob)} bytes")
+        print(f"Frame {id + 1} encoded to {len(frameBlob)} bytes")
         outputData.extend(frameBlob)
     print(f"Total size used: {len(outputData)} of 1024 bytes")
     return outputData

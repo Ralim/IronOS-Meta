@@ -27,10 +27,10 @@ jobs:
       - name: prep
         run: mkdir -p /tmp/${{ matrix.model }}
 
-      - name: build logo's
+      - name: build all files for the device
         run: cd Bootup\ Logos && ./run.sh /tmp/${{ matrix.model }}/ ${{matrix.args}}
 
-      - name: build logo's
+      - name: build logo erase file
         run: cd Bootup\ Logos && python3 img2logo.py -E erase_stored_image /tmp/${{ matrix.model }}/ ${{matrix.args}}
 
       - name: Archive artifacts

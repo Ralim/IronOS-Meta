@@ -154,7 +154,7 @@ def animated_image_to_bytes(imageIn: Image, negative: bool, dither: bool, thresh
     # Now we can build our output data blob
     # First we always start with a full first frame; future optimisation to check if we should or not
     outputData = [DATA_PROGRAMMED_MARKER]
-    outputData.append(frameTiming)
+    outputData.append(int(frameTiming))
     first_frame = get_screen_blob([0x00] * (LCD_NUM_BYTES), frameData[0])
     outputData.extend(first_frame)
     print(f"Frame 1 encoded to {len(first_frame)} bytes")

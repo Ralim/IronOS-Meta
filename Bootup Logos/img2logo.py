@@ -140,9 +140,15 @@ def animated_image_to_bytes(imageIn: Image, negative: bool, dither: bool, thresh
         frameDuration_ms = image.info["duration"]
         if frameDuration_ms > 255:
             frameDuration_ms = 255
-        if frameTiming is None or frameTiming == 0:
+        if frameTiming is None or frameTiming < 5:
             frameTiming = frameDuration_ms
     print(f"Found {len(frameData)} frames, interval {frameTiming}ms")
+    if frameTiming < 5 or (frameTiming / 5) > 254:
+        newTiming = max(frameTiming / 5, 1)
+        newTiming = min(newTiming, 254)
+
+        print(f"Inter frame delay {frameTiming} is out of range, and is being adjusted to {newTiming*5}")
+        frameTiming = newTiming
     # We have no mangled the image into our frambuffers
 
     # Now we can build our output data blob

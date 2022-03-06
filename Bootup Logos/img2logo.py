@@ -22,6 +22,7 @@ LCD_PAGE_SIZE = 1024
 
 DATA_PROGRAMMED_MARKER = 0xAA
 FULL_FRAME_MARKER = 0xFF
+EMPTY_FRAME_MARKER = 0xFE  # If this marker is used to start a frame, the frame is a 0-length delta frame
 
 
 class MiniwareSettings:
@@ -103,7 +104,9 @@ def get_screen_blob(previous_frame: bytearray, this_frame: bytearray):
     """
     outputData = []
     delta = calculate_frame_delta_encode(previous_frame, this_frame)
-    if len(delta) < (len(this_frame)):
+    if len(delta) == 0:
+        outputData.append(EMPTY_FRAME_MARKER)
+    elif len(delta) < (len(this_frame)):
         outputData.append(len(delta))
         outputData.extend(delta)
         # print("delta encoded frame")

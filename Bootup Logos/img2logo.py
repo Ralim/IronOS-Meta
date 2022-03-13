@@ -141,8 +141,13 @@ def animated_image_to_bytes(imageIn: Image, negative: bool, dither: bool, thresh
         frameData.append(frameb)
         # Store inter-frame duration
         frameDuration_ms = image.info["duration"]
-        if frameTiming is None or frameTiming < 5:
+        if frameTiming is None:
             frameTiming = frameDuration_ms
+        else:
+            delta = frameDuration_ms / frameTiming
+            if delta > 1.05 or delta < 0.95:
+                print(f"ERROR: You have a frame that is different to the first frame time. Mixed rates are not supported")
+                sys.exit(-1)
     print(f"Found {len(frameData)} frames, interval {frameTiming}ms")
     frameTiming = frameTiming / 5
     if frameTiming <= 0 or frameTiming > 254:

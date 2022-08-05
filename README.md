@@ -13,8 +13,8 @@ Periodically a "release" will be tagged and pre-compiled logo's will be put ther
 The IronOS firmware supports a user created bootup logo.
 By default, there is _not_ one included in the firmware. This means that once flashed they generally stay. If you want no logo again, you would have to flash a blank image to the bootup logo. 
 
-    ● Safe & Fun: will not over write your firmware
-    ● Easy install: use dfu tool just like updating firmware (or Pine64 Updater if you have a Pinecil).
+- Safe & Fun: will not over write your firmware
+- Easy install: use dfu tool just like updating firmware (or Pine64 Updater if you have a Pinecil).
 
 ## Generating the Logo files
 

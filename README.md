@@ -13,6 +13,9 @@ Periodically a "release" will be tagged and pre-compiled logo's will be put ther
 The IronOS firmware supports a user created bootup logo.
 By default, there is _not_ one included in the firmware. This means that once flashed they generally stay. If you want no logo again, you would have to flash a blank image to the bootup logo. 
 
+    ● Safe & Fun: will not over write your firmware
+    ● Easy install: use dfu tool just like updating firmware (or Pine64 Updater if you have a Pinecil).
+
 ## Generating the Logo files
 
 There are community logo's already converted and ready to use in [IronOS-Meta/releases](https://github.com/Ralim/IronOS-Meta/releases).
@@ -56,11 +59,11 @@ If you have flashed the `IronOS-dfu` alternative bootloader, you should use the 
 ### Pinecil
 
 For Pinecil, we require using dfu-util to flash the logo art (Pinecil does not use hex).
-[Pine64 Updater](https://github.com/pine64/pine64_updater/releases) is the easiest way to load the Bootup logo onto Pinecil as it already includes the necessary DFU library. Connect Pinecil to a PC, and open the Updater the same as updating firmware.
-  Select Custom > Browse to the DFU image file you just made > Update to install.
+[Pine64 Updater](https://github.com/pine64/pine64_updater/releases) is the easiest way to load the Bootup logo onto Pinecil as it already includes the necessary DFU library. Connect Pinecil to a PC, and open the Updater the same method as updating firmware.
+  Select Custom > Browse (to the DFU image file you just made) > Update (to install)
 
 The bootup logo is stored in a separate location than the IronOS firmware and you do not have to worry about it changing or breaking the IronOS.
 
-You could also use dfu-util and use Command line to install it.
+You could also use dfu-util Command line to install it.
 
 - `dfu-util -D logo_file.dfu`

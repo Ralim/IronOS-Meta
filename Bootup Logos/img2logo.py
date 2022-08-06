@@ -323,6 +323,8 @@ if __name__ == "__main__":
         sys.stderr.write("You must provide --miniware or --pinecil to select your model")
         sys.exit(1)
 
+    print(f"Converting {args.input_filename} => {args.output_filename}")
+
     img2hex(
         input_filename=args.input_filename,
         output_filename_base=args.output_filename,

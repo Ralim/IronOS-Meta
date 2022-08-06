@@ -36,14 +36,14 @@ This just overwrites individual bytes in the output buffer.
 |![Alt text](https://github.com/Ralim/IronOS-Meta/blob/main/Bootup%20Logos/Images/f1.png)|f1.png||
 |![Alt text](https://github.com/Ralim/IronOS-Meta/blob/main/Bootup%20Logos/Images/halo_master_chief_helmet.png)|halo_master_chief_helmet.png||
 |![Alt text](https://github.com/Ralim/IronOS-Meta/blob/main/Bootup%20Logos/Images/horror_vacui_IronOS.png)|horror_vacui_IronOS.png||
-|![IronOS](https://github.com/Ralim/IronOS-Meta/blob/main/Bootup%20Logos/Images/IronOS.png)|IronOS.png|lefty-version available|
+|![IronOS](https://github.com/Ralim/IronOS-Meta/blob/main/Bootup%20Logos/Images/IronOS.png)|IronOS.png||
 |![Alt text](https://github.com/Ralim/IronOS-Meta/blob/main/Bootup%20Logos/Images/lot_of_tin_is_too_few_tin_IT.png)|lot_of_tin_is_too_few_tin_IT.png|English: "A lot of tin is too few tin"|
 |![Alt text](https://github.com/Ralim/IronOS-Meta/blob/main/Bootup%20Logos/Images/open_sw_hw_IronOS_logos.png)|open_sw_hw_IronOS_logos.png||
-|![Pinecil](https://github.com/Ralim/IronOS-Meta/blob/main/Bootup%20Logos/Images/Pinecil.png)|Pinecil.png|lefty-version available|
+|![Pinecil](https://github.com/Ralim/IronOS-Meta/blob/main/Bootup%20Logos/Images/Pinecil.png)|Pinecil.png||
 |![Alt text](https://github.com/Ralim/IronOS-Meta/blob/main/Bootup%20Logos/Images/skulls.png)|skulls.png||
-|![TS100](https://github.com/Ralim/IronOS-Meta/blob/main/Bootup%20Logos/Images/TS100.png)|TS100.png|lefty-version available|
-|![TS80](https://github.com/Ralim/IronOS-Meta/blob/main/Bootup%20Logos/Images/TS80.png)|TS80.png|lefty-version available|
-|![TS80P](https://github.com/Ralim/IronOS-Meta/blob/main/Bootup%20Logos/Images/TS80P.png)|TS80P.png|lefty-version available|
+|![TS100](https://github.com/Ralim/IronOS-Meta/blob/main/Bootup%20Logos/Images/TS100.png)|TS100.png||
+|![TS80](https://github.com/Ralim/IronOS-Meta/blob/main/Bootup%20Logos/Images/TS80.png)|TS80.png||
+|![TS80P](https://github.com/Ralim/IronOS-Meta/blob/main/Bootup%20Logos/Images/TS80P.png)|TS80P.png||
 |![Alt text](https://github.com/Ralim/IronOS-Meta/blob/main/Bootup%20Logos/Images/wh_40k.png)|wh_40k.png||
 |![Alt text](https://github.com/Ralim/IronOS-Meta/blob/main/Bootup%20Logos/Images/wwii_kilroy.png)|wwii_kilroy.png||
 
@@ -51,7 +51,7 @@ This just overwrites individual bytes in the output buffer.
 |Logo \*          |Filename       |Note   |
 |:-------------:|:-------------:|:-----:|
 |![Alt text](https://github.com/Ralim/IronOS-Meta/blob/main/Bootup%20Logos/Images/CRT_horror_vacui.gif) |CRT_horror_vacui.gif||
-|![IronOS](https://github.com/Ralim/IronOS-Meta/blob/main/Bootup%20Logos/Images/IronOS.gif)|IronOS.gif|lefty-version available|
+|![IronOS](https://github.com/Ralim/IronOS-Meta/blob/main/Bootup%20Logos/Images/IronOS.gif)|IronOS.gif||
 |![Alt text](https://github.com/Ralim/IronOS-Meta/blob/main/Bootup%20Logos/Images/terminal.gif)|terminal.gif||
 
 _* Click the individual logo to see its animation, if you missed it here._

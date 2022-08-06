@@ -117,7 +117,7 @@ def get_screen_blob(previous_frame: bytearray, this_frame: bytearray):
     return outputData
 
 
-def animated_image_to_bytes(imageIn: Image, negative: bool, dither: bool, threshold: int):
+def animated_image_to_bytes(imageIn: Image, negative: bool, dither: bool, threshold: int, flip_frames):
     """
     Convert the gif into our best effort startup animation
     We are delta-encoding on a byte by byte basis
@@ -136,6 +136,8 @@ def animated_image_to_bytes(imageIn: Image, negative: bool, dither: bool, thresh
     for framenum in range(0, imageIn.n_frames):
         imageIn.seek(framenum)
         image = imageIn
+        if flip_frames:
+            image = image.rotate(180)
 
         frameb = still_image_to_bytes(image, negative, dither, threshold, None)
         frameData.append(frameb)
@@ -218,12 +220,12 @@ def img2hex(
             image = Image.open(input_filename)
         except BaseException as e:
             raise IOError('error reading image file "{}": {}'.format(input_filename, e))
-        if flip:
-            image = image.rotate(180)
 
         if getattr(image, "is_animated", False):
-            data = animated_image_to_bytes(image, negative, dither, threshold)
+            data = animated_image_to_bytes(image, negative, dither, threshold,flip)
         else:
+            if flip:
+                image = image.rotate(180)
             # magic/required header
             data = [DATA_PROGRAMMED_MARKER, 0x00]  # Timing value of 0
             image_bytes = still_image_to_bytes(image, negative, dither, threshold, preview_filename)

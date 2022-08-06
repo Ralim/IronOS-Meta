@@ -30,9 +30,6 @@ jobs:
       - name: build all files for the device
         run: cd Bootup\ Logos && ./run.sh /tmp/${{ matrix.model }}/ ${{matrix.args}}
 
-      - name: build all files for the device Flipped
-        run: cd Bootup\ Logos && ./run.sh /tmp/${{ matrix.model }}/ ${{matrix.args}} -r
-
       - name: build logo erase file
         run: cd Bootup\ Logos && python3 img2logo.py -E erase_stored_image /tmp/${{ matrix.model }}/ ${{matrix.args}}
 

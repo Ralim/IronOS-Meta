@@ -219,7 +219,7 @@ def img2hex(
         except BaseException as e:
             raise IOError('error reading image file "{}": {}'.format(input_filename, e))
         if flip:
-            image.rotate(180)
+            image = image.rotate(180)
 
         if getattr(image, "is_animated", False):
             data = animated_image_to_bytes(image, negative, dither, threshold)
@@ -281,12 +281,6 @@ def parse_commandline():
         help="photo negative: exchange black and white in output",
     )
 
-    parser.add_argument(
-        "-r",
-        "--rotate",
-        action="store_true",
-        help="Rotate image to be upside down; for left handed setups",
-    )
 
     parser.add_argument(
         "-t",
@@ -336,7 +330,7 @@ if __name__ == "__main__":
         sys.exit(1)
 
     print(f"Converting {args.input_filename} => {args.output_filename}")
-
+    
     img2hex(
         input_filename=args.input_filename,
         output_filename_base=args.output_filename,
@@ -346,5 +340,17 @@ if __name__ == "__main__":
         negative=args.negative,
         make_erase_image=args.erase,
         isPinecil=args.pinecil,
-        flip = args.rotate,
+        flip = False,
+    )
+    
+    img2hex(
+        input_filename=args.input_filename,
+        output_filename_base=args.output_filename,
+        preview_filename=args.preview,
+        threshold=args.threshold,
+        dither=args.dither,
+        negative=args.negative,
+        make_erase_image=args.erase,
+        isPinecil=args.pinecil,
+        flip = True,
     )

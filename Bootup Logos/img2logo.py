@@ -238,6 +238,8 @@ def img2hex(
         deviceSettings = PinecilSettings
     # Generate both possible outputs
     output_name = output_filename_base + os.path.basename(input_filename)
+    if flip:
+        output_name +="_L"
     DFUOutput.writeFile(
         output_name + ".dfu",
         data,

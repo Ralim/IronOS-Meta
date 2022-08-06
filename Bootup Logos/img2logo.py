@@ -195,6 +195,7 @@ def img2hex(
     isPinecil=False,
     make_erase_image=False,
     output_filename_base="out",
+    flip=False,
 ):
     """
     Convert 'input_filename' image file into Intel hex format with data
@@ -217,6 +218,8 @@ def img2hex(
             image = Image.open(input_filename)
         except BaseException as e:
             raise IOError('error reading image file "{}": {}'.format(input_filename, e))
+        if flip:
+            image.rotate(180)
 
         if getattr(image, "is_animated", False):
             data = animated_image_to_bytes(image, negative, dither, threshold)
@@ -273,7 +276,14 @@ def parse_commandline():
         "-n",
         "--negative",
         action="store_true",
-        help="photo negative: exchange black and white " "in output",
+        help="photo negative: exchange black and white in output",
+    )
+
+    parser.add_argument(
+        "-r",
+        "--rotate",
+        action="store_true",
+        help="Rotate image to be upside down; for left handed setups",
     )
 
     parser.add_argument(
@@ -334,4 +344,5 @@ if __name__ == "__main__":
         negative=args.negative,
         make_erase_image=args.erase,
         isPinecil=args.pinecil,
+        flip = args.rotate,
     )

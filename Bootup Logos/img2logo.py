@@ -117,7 +117,7 @@ def get_screen_blob(previous_frame: bytearray, this_frame: bytearray):
     return outputData
 
 
-def animated_image_to_bytes(imageIn: Image, negative: bool, dither: bool, threshold: int):
+def animated_image_to_bytes(imageIn: Image, negative: bool, dither: bool, threshold: int, flip_frames):
     """
     Convert the gif into our best effort startup animation
     We are delta-encoding on a byte by byte basis
@@ -136,6 +136,8 @@ def animated_image_to_bytes(imageIn: Image, negative: bool, dither: bool, thresh
     for framenum in range(0, imageIn.n_frames):
         imageIn.seek(framenum)
         image = imageIn
+        if flip_frames:
+            image = image.rotate(180)
 
         frameb = still_image_to_bytes(image, negative, dither, threshold, None)
         frameData.append(frameb)
@@ -195,6 +197,7 @@ def img2hex(
     isPinecil=False,
     make_erase_image=False,
     output_filename_base="out",
+    flip=False,
 ):
     """
     Convert 'input_filename' image file into Intel hex format with data
@@ -219,8 +222,10 @@ def img2hex(
             raise IOError('error reading image file "{}": {}'.format(input_filename, e))
 
         if getattr(image, "is_animated", False):
-            data = animated_image_to_bytes(image, negative, dither, threshold)
+            data = animated_image_to_bytes(image, negative, dither, threshold,flip)
         else:
+            if flip:
+                image = image.rotate(180)
             # magic/required header
             data = [DATA_PROGRAMMED_MARKER, 0x00]  # Timing value of 0
             image_bytes = still_image_to_bytes(image, negative, dither, threshold, preview_filename)
@@ -235,6 +240,8 @@ def img2hex(
         deviceSettings = PinecilSettings
     # Generate both possible outputs
     output_name = output_filename_base + os.path.basename(input_filename)
+    if flip:
+        output_name +="_L"
     DFUOutput.writeFile(
         output_name + ".dfu",
         data,
@@ -273,8 +280,9 @@ def parse_commandline():
         "-n",
         "--negative",
         action="store_true",
-        help="photo negative: exchange black and white " "in output",
+        help="photo negative: exchange black and white in output",
     )
+
 
     parser.add_argument(
         "-t",
@@ -323,6 +331,8 @@ if __name__ == "__main__":
         sys.stderr.write("You must provide --miniware or --pinecil to select your model")
         sys.exit(1)
 
+    print(f"Converting {args.input_filename} => {args.output_filename}")
+    
     img2hex(
         input_filename=args.input_filename,
         output_filename_base=args.output_filename,
@@ -332,4 +342,17 @@ if __name__ == "__main__":
         negative=args.negative,
         make_erase_image=args.erase,
         isPinecil=args.pinecil,
+        flip = False,
+    )
+    
+    img2hex(
+        input_filename=args.input_filename,
+        output_filename_base=args.output_filename,
+        preview_filename=args.preview,
+        threshold=args.threshold,
+        dither=args.dither,
+        negative=args.negative,
+        make_erase_image=args.erase,
+        isPinecil=args.pinecil,
+        flip = True,
     )

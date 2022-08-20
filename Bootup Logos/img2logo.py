@@ -238,11 +238,15 @@ def img2hex(
     deviceSettings = MiniwareSettings
     if isPinecil:
         deviceSettings = PinecilSettings
-    # Generate both possible outputs
+
+    # Split name from extension so we can mangle in the _L suffix for flipped images
     split_name = os.path.splitext( os.path.basename(input_filename))
 
     if flip:
-        split_name +="_L"
+        base = split_name[0]
+        ext = split_name[1]
+        base =base+"_L"
+        split_name = [base,ext]
     output_name = output_filename_base +split_name[0] +split_name[1]
 
     DFUOutput.writeFile(

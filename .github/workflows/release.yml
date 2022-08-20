@@ -29,7 +29,7 @@ jobs:
         run: cd Bootup\ Logos && python3 img2logo.py -E erase_stored_image /tmp/pinecil/ -p && python3 img2logo.py -E erase_stored_image /tmp/miniware/ -m
 
       - name: compress logo files
-        run: zip -r pinecil.zip /tmp/pinecil/* && zip -r miniware.zip /tmp/miniware/*
+        run: zip -r pinecil.zip /* && zip -r miniware.zip /*
 
       - uses: "marvinpinto/action-automatic-releases@latest"
         with:

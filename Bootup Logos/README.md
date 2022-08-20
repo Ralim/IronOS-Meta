@@ -33,19 +33,27 @@ This just overwrites individual bytes in the output buffer.
 |![Alt text](https://github.com/Ralim/IronOS-Meta/blob/main/Bootup%20Logos/Images/arcade_galaga.png)|arcade_galaga.png||
 |![Alt text](https://github.com/Ralim/IronOS-Meta/blob/main/Bootup%20Logos/Images/arcade_pac_man.png)|arcade_pac_man.png||
 |![Alt text](https://github.com/Ralim/IronOS-Meta/blob/main/Bootup%20Logos/Images/bender.png)|bender.png||
+|![Alt text](https://github.com/Ralim/IronOS-Meta/blob/main/Bootup%20Logos/Images/doggie_bone.png)|doggie_bone.png||
 |![Alt text](https://github.com/Ralim/IronOS-Meta/blob/main/Bootup%20Logos/Images/f1.png)|f1.png||
 |![Alt text](https://github.com/Ralim/IronOS-Meta/blob/main/Bootup%20Logos/Images/halo_master_chief_helmet.png)|halo_master_chief_helmet.png||
 |![Alt text](https://github.com/Ralim/IronOS-Meta/blob/main/Bootup%20Logos/Images/horror_vacui_IronOS.png)|horror_vacui_IronOS.png||
 |![IronOS](https://github.com/Ralim/IronOS-Meta/blob/main/Bootup%20Logos/Images/IronOS.png)|IronOS.png||
+|![Alt text](https://github.com/Ralim/IronOS-Meta/blob/main/Bootup%20Logos/Images/Logo1b.png)|Logo1b.png||
 |![Alt text](https://github.com/Ralim/IronOS-Meta/blob/main/Bootup%20Logos/Images/lot_of_tin_is_too_few_tin_IT.png)|lot_of_tin_is_too_few_tin_IT.png|English: "A lot of tin is too few tin"|
+|![Alt text](https://github.com/Ralim/IronOS-Meta/blob/main/Bootup%20Logos/Images/majorTom.png)|majorTom.png||
 |![Alt text](https://github.com/Ralim/IronOS-Meta/blob/main/Bootup%20Logos/Images/open_sw_hw_IronOS_logos.png)|open_sw_hw_IronOS_logos.png||
 |![Pinecil](https://github.com/Ralim/IronOS-Meta/blob/main/Bootup%20Logos/Images/Pinecil.png)|Pinecil.png||
 |![Alt text](https://github.com/Ralim/IronOS-Meta/blob/main/Bootup%20Logos/Images/skulls.png)|skulls.png||
 |![TS100](https://github.com/Ralim/IronOS-Meta/blob/main/Bootup%20Logos/Images/TS100.png)|TS100.png||
 |![TS80](https://github.com/Ralim/IronOS-Meta/blob/main/Bootup%20Logos/Images/TS80.png)|TS80.png||
 |![TS80P](https://github.com/Ralim/IronOS-Meta/blob/main/Bootup%20Logos/Images/TS80P.png)|TS80P.png||
+|![Alt text](https://github.com/Ralim/IronOS-Meta/blob/main/Bootup%20Logos/Images/science.png)|science.png||
+|![TS100](https://github.com/Ralim/IronOS-Meta/blob/main/Bootup%20Logos/Images/TS100.png)|TS100.png||
+|![TS80](https://github.com/Ralim/IronOS-Meta/blob/main/Bootup%20Logos/Images/TS80.png)|TS80.png||
+|![TS80P](https://github.com/Ralim/IronOS-Meta/blob/main/Bootup%20Logos/Images/TS80P.png)|TS80P.png||
 |![Alt text](https://github.com/Ralim/IronOS-Meta/blob/main/Bootup%20Logos/Images/wh_40k.png)|wh_40k.png||
 |![Alt text](https://github.com/Ralim/IronOS-Meta/blob/main/Bootup%20Logos/Images/wwii_kilroy.png)|wwii_kilroy.png||
+
 
 **Animated logos**
 |Logo \*          |Filename       |Note   |

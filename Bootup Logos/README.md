@@ -43,11 +43,8 @@ This just overwrites individual bytes in the output buffer.
 |![Alt text](https://github.com/Ralim/IronOS-Meta/blob/main/Bootup%20Logos/Images/majorTom.png)|majorTom.png||
 |![Alt text](https://github.com/Ralim/IronOS-Meta/blob/main/Bootup%20Logos/Images/open_sw_hw_IronOS_logos.png)|open_sw_hw_IronOS_logos.png||
 |![Pinecil](https://github.com/Ralim/IronOS-Meta/blob/main/Bootup%20Logos/Images/Pinecil.png)|Pinecil.png||
-|![Alt text](https://github.com/Ralim/IronOS-Meta/blob/main/Bootup%20Logos/Images/skulls.png)|skulls.png||
-|![TS100](https://github.com/Ralim/IronOS-Meta/blob/main/Bootup%20Logos/Images/TS100.png)|TS100.png||
-|![TS80](https://github.com/Ralim/IronOS-Meta/blob/main/Bootup%20Logos/Images/TS80.png)|TS80.png||
-|![TS80P](https://github.com/Ralim/IronOS-Meta/blob/main/Bootup%20Logos/Images/TS80P.png)|TS80P.png||
 |![Alt text](https://github.com/Ralim/IronOS-Meta/blob/main/Bootup%20Logos/Images/science.png)|science.png||
+|![Alt text](https://github.com/Ralim/IronOS-Meta/blob/main/Bootup%20Logos/Images/skulls.png)|skulls.png||
 |![TS100](https://github.com/Ralim/IronOS-Meta/blob/main/Bootup%20Logos/Images/TS100.png)|TS100.png||
 |![TS80](https://github.com/Ralim/IronOS-Meta/blob/main/Bootup%20Logos/Images/TS80.png)|TS80.png||
 |![TS80P](https://github.com/Ralim/IronOS-Meta/blob/main/Bootup%20Logos/Images/TS80P.png)|TS80P.png||

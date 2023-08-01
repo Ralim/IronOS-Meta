@@ -15,7 +15,7 @@ jobs:
       - name: Install dependencies (apk)
         run: sudo apt update && sudo apt-get install -y git python3 python3-pillow
 
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           submodules: true
 
@@ -23,13 +23,34 @@ jobs:
         run: mkdir -p /tmp/pinecil && mkdir -p /tmp/miniware
 
       - name: build all files for the device
-        run: cd Bootup\ Logos && ./run.sh /tmp/pinecil/ -p && ./run.sh /tmp/miniware/ -m
+        run: |
+          cd Bootup\ Logos && \
+          ./run.sh /tmp/pinecilv1/ -m pinecilv1 && \
+          ./run.sh /tmp/pinecilv2/ -m pinecilv2 && \
+          ./run.sh /tmp/miniware/ -m miniware && \
+          ./run.sh /tmp/TS101/ -m TS101 && \
+          ./run.sh /tmp/MHP30/ -m MHP30 && \
+          ./run.sh /tmp/S60/ -m S60 
 
       - name: build logo erase file
-        run: cd Bootup\ Logos && python3 img2logo.py -E erase_stored_image /tmp/pinecil/ -p && python3 img2logo.py -E erase_stored_image /tmp/miniware/ -m
+        run: |
+          cd Bootup\ Logos && \
+          python3 img2logo.py -E erase_stored_image /tmp/pinecilv1/ -m pinecilv1 && \
+          python3 img2logo.py -E erase_stored_image /tmp/pinecilv2/ -m pinecilv2 && \
+          python3 img2logo.py -E erase_stored_image /tmp/miniware/ -m miniware && \
+          python3 img2logo.py -E erase_stored_image /tmp/ts101/ -m ts101 && \
+          python3 img2logo.py -E erase_stored_image /tmp/mhp30/ -m mhp30 && \
+          python3 img2logo.py -E erase_stored_image /tmp/s60/ -m s60 
 
+          
       - name: compress logo files
-        run: zip -rj pinecil.zip /tmp/pinecil/* && zip -rj miniware.zip /tmp/miniware/*
+        run: |
+          zip -rj pinecilv1.zip /tmp/pinecilv1/* && \
+          zip -rj miniware.zip /tmp/miniware/* && \
+          zip -rj pinecilv2.zip /tmp/pinecilv2/* && \
+          zip -rj ts101.zip /tmp/ts101/* && \
+          zip -rj mhp30.zip /tmp/mhp30/* && \
+          zip -rj s60.zip /tmp/s60/* 
 
       - uses: "marvinpinto/action-automatic-releases@latest"
         with:

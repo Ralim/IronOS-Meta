@@ -22,7 +22,7 @@ jobs:
       - name: Install dependencies (apk)
         run: apk add --no-cache git python3 py3-pip zlib py3-pillow
 
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           submodules: true
 
@@ -36,7 +36,7 @@ jobs:
         run: cd Bootup\ Logos && python3 img2logo.py -E erase_stored_image /tmp/${{ matrix.model }}/ -m ${{matrix.model}}
 
       - name: Archive artifacts
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: ${{ matrix.model }}
           path: |

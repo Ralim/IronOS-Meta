@@ -10,10 +10,18 @@ jobs:
     strategy:
       matrix:
         include:
-          - args: "-m"
+          - args: "-m miniware"
             model: "miniware"
-          - args: "-p"
-            model: "pinecil"
+          - args: "-m pinecilv1"
+            model: "pinecilv1"
+          - args: "-m pinecilv2"
+            model: "pinecilv2"
+          - args: "-m mhp30"
+            model: "mhp30"
+          - args: "-m ts101"
+            model: "ts101"
+          - args: "-m s60"
+            model: "s60"
       fail-fast: true
 
     steps:

@@ -58,8 +58,8 @@ class PinecilSettings:
     DFU_PINECIL_VENDOR = 0x28E9
     DFU_PINECIL_PRODUCT = 0x0189
     
-class Pinecilv2Settings:
-    IMAGE_ADDRESS = (1022 * 1024)
+class   Pinecilv2Settings:
+    IMAGE_ADDRESS = (1016 * 1024) # its 2 4k erase pages inset
     DFU_TARGET_NAME = b"Pinecilv2"
     DFU_PINECIL_ALT = 0
     DFU_PINECIL_VENDOR = 0x28E9 # These are ignored by blisp so doesnt matter what we use

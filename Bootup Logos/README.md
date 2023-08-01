@@ -1,3 +1,5 @@
+# Boot up Logos
+
 ## Boot up logo's are logos or animations shown on boot of IronOS
 
 These are programmed into the device just like the normal firmware.
@@ -50,7 +52,6 @@ This just overwrites individual bytes in the output buffer.
 |![TS80P](https://github.com/Ralim/IronOS-Meta/blob/main/Bootup%20Logos/Images/TS80P.png)|TS80P.png||
 |![Alt text](https://github.com/Ralim/IronOS-Meta/blob/main/Bootup%20Logos/Images/wh_40k.png)|wh_40k.png||
 |![Alt text](https://github.com/Ralim/IronOS-Meta/blob/main/Bootup%20Logos/Images/wwii_kilroy.png)|wwii_kilroy.png||
-
 
 **Animated logos**
 |Logo \*          |Filename       |Note   |

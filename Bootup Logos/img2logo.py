@@ -32,13 +32,39 @@ class MiniwareSettings:
     DFU_PINECIL_VENDOR = 0x1209
     DFU_PINECIL_PRODUCT = 0xDB42
 
-
+class S60Settings:
+    IMAGE_ADDRESS = 0x08000000 + (62 * 1024)
+    DFU_TARGET_NAME = b"IronOS-dfu"
+    DFU_PINECIL_ALT = 0
+    DFU_PINECIL_VENDOR = 0x1209
+    DFU_PINECIL_PRODUCT = 0xDB42
+    
+class TS101Settings:
+    IMAGE_ADDRESS = 0x08000000 + (126 * 1024)
+    DFU_TARGET_NAME = b"IronOS-dfu"
+    DFU_PINECIL_ALT = 0
+    DFU_PINECIL_VENDOR = 0x1209
+    DFU_PINECIL_PRODUCT = 0xDB42
+class MHP30Settings:
+    IMAGE_ADDRESS = 0x08000000 + (126 * 1024)
+    DFU_TARGET_NAME = b"IronOS-dfu"
+    DFU_PINECIL_ALT = 0
+    DFU_PINECIL_VENDOR = 0x1209
+    DFU_PINECIL_PRODUCT = 0xDB42
 class PinecilSettings:
     IMAGE_ADDRESS = 0x0801F800
     DFU_TARGET_NAME = b"Pinecil"
     DFU_PINECIL_ALT = 0
     DFU_PINECIL_VENDOR = 0x28E9
     DFU_PINECIL_PRODUCT = 0x0189
+    
+class   Pinecilv2Settings:
+    IMAGE_ADDRESS = (1016 * 1024) # its 2 4k erase pages inset
+    DFU_TARGET_NAME = b"Pinecilv2"
+    DFU_PINECIL_ALT = 0
+    DFU_PINECIL_VENDOR = 0x28E9 # These are ignored by blisp so doesnt matter what we use
+    DFU_PINECIL_PRODUCT = 0x0189 # These are ignored by blisp so doesnt matter what we use
+    
 
 
 def still_image_to_bytes(image: Image, negative: bool, dither: bool, threshold: int, preview_filename):
@@ -190,11 +216,11 @@ def animated_image_to_bytes(imageIn: Image, negative: bool, dither: bool, thresh
 
 def img2hex(
     input_filename,
+    device_model_name:str,
     preview_filename=None,
     threshold=128,
     dither=False,
     negative=False,
-    isPinecil=False,
     make_erase_image=False,
     output_filename_base="out",
     flip=False,
@@ -235,9 +261,21 @@ def img2hex(
     if len(data) < LCD_PAGE_SIZE:
         pad = [0] * (LCD_PAGE_SIZE - len(data))
         data.extend(pad)
-    deviceSettings = MiniwareSettings
-    if isPinecil:
+    if device_model_name == "miniware":
+        deviceSettings = MiniwareSettings
+    elif device_model_name == "pinecilv1":
         deviceSettings = PinecilSettings
+    elif device_model_name == "pinecilv2":
+        deviceSettings = Pinecilv2Settings
+    elif device_model_name == "ts101":
+        deviceSettings = TS101Settings
+    elif device_model_name == "s60":
+        deviceSettings = S60Settings
+    elif device_model_name == "mhp30":
+        deviceSettings = MHP30Settings
+    else:
+        print("Could not determine device type")
+        sys.exit(-1)
 
     # Split name from extension so we can mangle in the _L suffix for flipped images
     split_name = os.path.splitext( os.path.basename(input_filename))
@@ -313,8 +351,7 @@ def parse_commandline():
         help="generate a logo erase file instead of a logo",
     )
 
-    parser.add_argument("-p", "--pinecil", action="store_true", help="generate files for Pinecil")
-    parser.add_argument("-m", "--miniware", action="store_true", help="generate files for miniware")
+    parser.add_argument("-m", "--model",  help="device model name")
     parser.add_argument(
         "-v",
         "--version",
@@ -334,32 +371,32 @@ if __name__ == "__main__":
         sys.stderr.write('Won\'t overwrite existing file "{}" (use --force ' "option to override)\n".format(args.preview))
         sys.exit(1)
 
-    if args.miniware == False and args.pinecil == False:
-        sys.stderr.write("You must provide --miniware or --pinecil to select your model")
-        sys.exit(1)
 
     print(f"Converting {args.input_filename} => {args.output_filename}")
+    
+    
     
     img2hex(
         input_filename=args.input_filename,
         output_filename_base=args.output_filename,
+        device_model_name=args.model,
         preview_filename=args.preview,
         threshold=args.threshold,
         dither=args.dither,
         negative=args.negative,
         make_erase_image=args.erase,
-        isPinecil=args.pinecil,
+        
         flip = False,
     )
     
     img2hex(
         input_filename=args.input_filename,
         output_filename_base=args.output_filename,
+        device_model_name=args.model,
         preview_filename=args.preview,
         threshold=args.threshold,
         dither=args.dither,
         negative=args.negative,
         make_erase_image=args.erase,
-        isPinecil=args.pinecil,
         flip = True,
     )

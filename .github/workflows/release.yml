@@ -20,7 +20,13 @@ jobs:
           submodules: true
 
       - name: prep
-        run: mkdir -p /tmp/pinecil && mkdir -p /tmp/miniware
+        run: |
+          mkdir -p /tmp/pinecilv1 && \
+          mkdir -p /tmp/pinecilv2 && \
+          mkdir -p /tmp/miniware && \
+          mkdir -p /tmp/TS101 && \
+          mkdir -p /tmp/MHP30 && \
+          mkdir -p /tmp/S60
 
       - name: build all files for the device
         run: |

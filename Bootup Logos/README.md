@@ -60,5 +60,6 @@ This just overwrites individual bytes in the output buffer.
 |![Alt text](https://github.com/Ralim/IronOS-Meta/blob/main/Bootup%20Logos/Images/CRT_horror_vacui.gif) |CRT_horror_vacui.gif||
 |![IronOS](https://github.com/Ralim/IronOS-Meta/blob/main/Bootup%20Logos/Images/IronOS.gif)|IronOS.gif||
 |![Alt text](https://github.com/Ralim/IronOS-Meta/blob/main/Bootup%20Logos/Images/terminal.gif)|terminal.gif||
+|![Alt text](https://github.com/Ralim/IronOS-Meta/blob/main/Bootup%20Logos/Images/hack_the_planet.gif)|hack_the_planet.gif||
 
 _* Click the individual logo to see its animation, if you missed it here._

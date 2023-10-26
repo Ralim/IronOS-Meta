@@ -38,33 +38,34 @@ class S60Settings:
     DFU_PINECIL_ALT = 0
     DFU_PINECIL_VENDOR = 0x1209
     DFU_PINECIL_PRODUCT = 0xDB42
-    
+
 class TS101Settings:
     IMAGE_ADDRESS = 0x08000000 + (126 * 1024)
     DFU_TARGET_NAME = b"IronOS-dfu"
     DFU_PINECIL_ALT = 0
     DFU_PINECIL_VENDOR = 0x1209
     DFU_PINECIL_PRODUCT = 0xDB42
+
 class MHP30Settings:
     IMAGE_ADDRESS = 0x08000000 + (126 * 1024)
     DFU_TARGET_NAME = b"IronOS-dfu"
     DFU_PINECIL_ALT = 0
     DFU_PINECIL_VENDOR = 0x1209
     DFU_PINECIL_PRODUCT = 0xDB42
+
 class PinecilSettings:
     IMAGE_ADDRESS = 0x0801F800
     DFU_TARGET_NAME = b"Pinecil"
     DFU_PINECIL_ALT = 0
     DFU_PINECIL_VENDOR = 0x28E9
     DFU_PINECIL_PRODUCT = 0x0189
-    
+
 class   Pinecilv2Settings:
     IMAGE_ADDRESS = (1016 * 1024) # its 2 4k erase pages inset
     DFU_TARGET_NAME = b"Pinecilv2"
     DFU_PINECIL_ALT = 0
     DFU_PINECIL_VENDOR = 0x28E9 # These are ignored by blisp so doesnt matter what we use
     DFU_PINECIL_PRODUCT = 0x0189 # These are ignored by blisp so doesnt matter what we use
-    
 
 
 def still_image_to_bytes(image: Image, negative: bool, dither: bool, threshold: int, preview_filename):
@@ -261,17 +262,20 @@ def img2hex(
     if len(data) < LCD_PAGE_SIZE:
         pad = [0] * (LCD_PAGE_SIZE - len(data))
         data.extend(pad)
-    if device_model_name == "miniware":
+
+    # Set device settings depending on input `-m` argument
+    deviceName = device_model_name.lower()
+    if deviceName == "miniware" or deviceName == "ts100" or deviceName == "ts80" or deviceName == "ts80p":
         deviceSettings = MiniwareSettings
-    elif device_model_name == "pinecilv1":
+    elif deviceName == "pinecilv1" or deviceName == "pinecil":
         deviceSettings = PinecilSettings
-    elif device_model_name == "pinecilv2":
+    elif deviceName == "pinecilv2":
         deviceSettings = Pinecilv2Settings
-    elif device_model_name == "ts101":
+    elif deviceName == "ts101":
         deviceSettings = TS101Settings
-    elif device_model_name == "s60":
+    elif deviceName == "s60":
         deviceSettings = S60Settings
-    elif device_model_name == "mhp30":
+    elif deviceName == "mhp30":
         deviceSettings = MHP30Settings
     else:
         print("Could not determine device type")
@@ -373,9 +377,8 @@ if __name__ == "__main__":
 
 
     print(f"Converting {args.input_filename} => {args.output_filename}")
-    
-    
-    
+
+
     img2hex(
         input_filename=args.input_filename,
         output_filename_base=args.output_filename,
@@ -385,10 +388,9 @@ if __name__ == "__main__":
         dither=args.dither,
         negative=args.negative,
         make_erase_image=args.erase,
-        
         flip = False,
     )
-    
+
     img2hex(
         input_filename=args.input_filename,
         output_filename_base=args.output_filename,

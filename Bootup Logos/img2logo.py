@@ -264,18 +264,18 @@ def img2hex(
         data.extend(pad)
 
     # Set device settings depending on input `-m` argument
-    deviceName = device_model_name.lower()
-    if deviceName == "miniware" or deviceName == "ts100" or deviceName == "ts80" or deviceName == "ts80p":
+    device_name = device_model_name.lower()
+    if device_name == "miniware" or device_name == "ts100" or device_name == "ts80" or device_name == "ts80p":
         deviceSettings = MiniwareSettings
-    elif deviceName == "pinecilv1" or deviceName == "pinecil":
+    elif device_name == "pinecilv1" or device_name == "pinecil":
         deviceSettings = PinecilSettings
-    elif deviceName == "pinecilv2":
+    elif device_name == "pinecilv2":
         deviceSettings = Pinecilv2Settings
-    elif deviceName == "ts101":
+    elif device_name == "ts101":
         deviceSettings = TS101Settings
-    elif deviceName == "s60":
+    elif device_name == "s60":
         deviceSettings = S60Settings
-    elif deviceName == "mhp30":
+    elif device_name == "mhp30":
         deviceSettings = MHP30Settings
     else:
         print("Could not determine device type")

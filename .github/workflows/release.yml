@@ -56,7 +56,7 @@
             zip -rj pinecilv2.zip /tmp/pinecilv2/* && \
             zip -rj ts101.zip /tmp/ts101/* && \
             zip -rj mhp30.zip /tmp/mhp30/* && \
-            zip -rj s60.zip /tmp/s60/* 
+            zip -rj s60_s60p.zip /tmp/s60/* 
   
         - uses: "marvinpinto/action-automatic-releases@latest"
           with:

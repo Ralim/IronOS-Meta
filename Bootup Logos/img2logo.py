@@ -4,7 +4,7 @@ from __future__ import division
 import argparse
 import copy
 import os, sys
-
+from intelhex import IntelHex
 from output_hex import HexOutput
 from output_dfu import DFUOutput
 
@@ -243,6 +243,7 @@ def animated_image_to_bytes(
 def img2hex(
     input_filename,
     device_model_name: str,
+    merge_hex_file: str | None,
     preview_filename=None,
     threshold=128,
     dither=False,
@@ -323,10 +324,50 @@ def img2hex(
         split_name = [base, ext]
     output_name = output_filename_base + split_name[0] + split_name[1]
 
+    # If a file has been specified for merging, we want to splice our image data with it
+    if merge_hex_file is not None:
+        read_merge_write(merge_hex_file, data, deviceSettings, output_name)
+    else:
+        DFUOutput.writeFile(
+            output_name + ".dfu",
+            data,
+            deviceSettings.IMAGE_ADDRESS,
+            deviceSettings.DFU_TARGET_NAME,
+            deviceSettings.DFU_ALT,
+            deviceSettings.DFU_PRODUCT,
+            deviceSettings.DFU_VENDOR,
+        )
+
+        HexOutput.writeFile(
+            output_name + ".hex",
+            data,
+            deviceSettings.IMAGE_ADDRESS,
+            deviceSettings.MINIMUM_HEX_SIZE,
+        )
+
+
+def read_merge_write(
+    merge_filename: str, image_data: list[int], deviceSettings, output_filename: str
+):
+    """
+    Reads in the merge filename as the base object, then inserts the image data.
+    Then pad-fills the empty space in the binary
+    """
+    base_hex_file = IntelHex(merge_filename)
+    logo_hex_file = IntelHex()
+    logo_hex_file.frombytes(image_data, deviceSettings.IMAGE_ADDRESS)
+    # Merge in the image data, error if collision
+    base_hex_file.merge(logo_hex_file, overlap="error")
+    binary_base = base_hex_file.minaddr()
+    base_hex_file.padding = 0xA5
+    binary_blob = base_hex_file.tobinarray(start=binary_base)
+    print(
+        f"Post-merge output image starts at 0x{binary_base:x}, len {len(binary_blob)}"
+    )
     DFUOutput.writeFile(
-        output_name + ".dfu",
-        data,
-        deviceSettings.IMAGE_ADDRESS,
+        output_filename + ".dfu",
+        binary_blob,
+        binary_base,
         deviceSettings.DFU_TARGET_NAME,
         deviceSettings.DFU_ALT,
         deviceSettings.DFU_PRODUCT,
@@ -334,9 +375,9 @@ def img2hex(
     )
 
     HexOutput.writeFile(
-        output_name + ".hex",
-        data,
-        deviceSettings.IMAGE_ADDRESS,
+        output_filename + ".hex",
+        binary_blob,
+        binary_base,
         deviceSettings.MINIMUM_HEX_SIZE,
     )
 
@@ -361,6 +402,12 @@ def parse_commandline():
         "-P",
         "--preview",
         help="filename of image preview",
+    )
+
+    parser.add_argument(
+        "-M",
+        "--merge",
+        help="filename of another hex file to merge with, creating a combined firmware",
     )
 
     parser.add_argument(
@@ -420,6 +467,7 @@ if __name__ == "__main__":
     print(f"Converting {args.input_filename} => {args.output_filename}")
 
     img2hex(
+        merge_hex_file=args.merge,
         input_filename=args.input_filename,
         output_filename_base=args.output_filename,
         device_model_name=args.model,
@@ -432,6 +480,7 @@ if __name__ == "__main__":
     )
 
     img2hex(
+        merge_hex_file=args.merge,
         input_filename=args.input_filename,
         output_filename_base=args.output_filename,
         device_model_name=args.model,

@@ -10,7 +10,6 @@ class HexOutput:
     INTELHEX_END_OF_FILE_RECORD = 0x01
     INTELHEX_EXTENDED_LINEAR_ADDRESS_RECORD = 0x04
     INTELHEX_BYTES_PER_LINE = 16
-    INTELHEX_MINIMUM_SIZE = 4096
 
     @classmethod
     def split16(cls, word):
@@ -53,7 +52,13 @@ class HexOutput:
         )  # low 8 bits
 
     @classmethod
-    def writeFile(cls, file_name: str, data: bytearray, data_address: int):
+    def writeFile(
+        cls,
+        file_name: str,
+        data: bytearray,
+        data_address: int,
+        minimum_hex_file_size: int,
+    ):
         """write block of data in Intel hex format"""
         with open(file_name, "w", newline="\r\n") as output:
 
@@ -79,7 +84,7 @@ class HexOutput:
             )
 
             size_written = 0
-            while size_written < cls.INTELHEX_MINIMUM_SIZE:
+            while size_written < minimum_hex_file_size:
                 offset = address_lo
                 for line_start in range(0, len(data), cls.INTELHEX_BYTES_PER_LINE):
                     write(
@@ -90,8 +95,6 @@ class HexOutput:
                         )
                     )
                     size_written += cls.INTELHEX_BYTES_PER_LINE
-                    if size_written >= cls.INTELHEX_MINIMUM_SIZE:
-                        break
                     offset += cls.INTELHEX_BYTES_PER_LINE
 
             write(cls.intel_hex_line(cls.INTELHEX_END_OF_FILE_RECORD, 0, ()))

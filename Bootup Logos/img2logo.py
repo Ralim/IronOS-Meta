@@ -11,7 +11,11 @@ from output_dfu import DFUOutput
 try:
     from PIL import Image, ImageOps
 except ImportError as error:
-    raise ImportError("{}: {} requres Python Imaging Library (PIL). " "Install with `pip` (pip3 install pillow) or OS-specific package " "management tool.".format(error, sys.argv[0]))
+    raise ImportError(
+        "{}: {} requres Python Imaging Library (PIL). "
+        "Install with `pip` (pip3 install pillow) or OS-specific package "
+        "management tool.".format(error, sys.argv[0])
+    )
 
 VERSION_STRING = "1.0"
 
@@ -22,58 +26,73 @@ LCD_PAGE_SIZE = 1024
 
 DATA_PROGRAMMED_MARKER = 0xAA
 FULL_FRAME_MARKER = 0xFF
-EMPTY_FRAME_MARKER = 0xFE  # If this marker is used to start a frame, the frame is a 0-length delta frame
+EMPTY_FRAME_MARKER = (
+    0xFE  # If this marker is used to start a frame, the frame is a 0-length delta frame
+)
 
 
 class MiniwareSettings:
     IMAGE_ADDRESS = 0x0800F800
     DFU_TARGET_NAME = b"IronOS-dfu"
-    DFU_PINECIL_ALT = 0
-    DFU_PINECIL_VENDOR = 0x1209
-    DFU_PINECIL_PRODUCT = 0xDB42
+    DFU_ALT = 0
+    DFU_VENDOR = 0x1209
+    DFU_PRODUCT = 0xDB42
+    MINIMUM_HEX_SIZE = 4096
+
 
 class S60Settings:
     IMAGE_ADDRESS = 0x08000000 + (62 * 1024)
     DFU_TARGET_NAME = b"IronOS-dfu"
-    DFU_PINECIL_ALT = 0
-    DFU_PINECIL_VENDOR = 0x1209
-    DFU_PINECIL_PRODUCT = 0xDB42
+    DFU_ALT = 0
+    DFU_VENDOR = 0x1209
+    DFU_PRODUCT = 0xDB42
+    MINIMUM_HEX_SIZE = 1024
+
 
 class TS101Settings:
     IMAGE_ADDRESS = 0x08000000 + (126 * 1024)
     DFU_TARGET_NAME = b"IronOS-dfu"
-    DFU_PINECIL_ALT = 0
-    DFU_PINECIL_VENDOR = 0x1209
-    DFU_PINECIL_PRODUCT = 0xDB42
+    DFU_ALT = 0
+    DFU_VENDOR = 0x1209
+    DFU_PRODUCT = 0xDB42
+    MINIMUM_HEX_SIZE = 1024
+
 
 class MHP30Settings:
     IMAGE_ADDRESS = 0x08000000 + (126 * 1024)
     DFU_TARGET_NAME = b"IronOS-dfu"
-    DFU_PINECIL_ALT = 0
-    DFU_PINECIL_VENDOR = 0x1209
-    DFU_PINECIL_PRODUCT = 0xDB42
+    DFU_ALT = 0
+    DFU_VENDOR = 0x1209
+    DFU_PRODUCT = 0xDB42
+    MINIMUM_HEX_SIZE = 4096
+
 
 class PinecilSettings:
     IMAGE_ADDRESS = 0x0801F800
     DFU_TARGET_NAME = b"Pinecil"
-    DFU_PINECIL_ALT = 0
-    DFU_PINECIL_VENDOR = 0x28E9
-    DFU_PINECIL_PRODUCT = 0x0189
+    DFU_ALT = 0
+    DFU_VENDOR = 0x28E9
+    DFU_PRODUCT = 0x0189
+    MINIMUM_HEX_SIZE = 1024
 
-class   Pinecilv2Settings:
-    IMAGE_ADDRESS = (1016 * 1024) # its 2 4k erase pages inset
+
+class Pinecilv2Settings:
+    IMAGE_ADDRESS = 1016 * 1024  # its 2 4k erase pages inset
     DFU_TARGET_NAME = b"Pinecilv2"
-    DFU_PINECIL_ALT = 0
-    DFU_PINECIL_VENDOR = 0x28E9 # These are ignored by blisp so doesnt matter what we use
-    DFU_PINECIL_PRODUCT = 0x0189 # These are ignored by blisp so doesnt matter what we use
+    DFU_ALT = 0
+    DFU_VENDOR = 0x28E9  # These are ignored by blisp so doesnt matter what we use
+    DFU_PRODUCT = 0x0189  # These are ignored by blisp so doesnt matter what we use
+    MINIMUM_HEX_SIZE = 1024
 
 
-def still_image_to_bytes(image: Image, negative: bool, dither: bool, threshold: int, preview_filename):
+def still_image_to_bytes(
+    image: Image, negative: bool, dither: bool, threshold: int, preview_filename
+):
     # convert to luminance
     # do even if already black/white because PIL can't invert 1-bit so
     #   can't just pass thru in case --negative flag
     # also resizing works better in luminance than black/white
-    # also no information loss converting black/white to grayscale
+    # also no information loss converting black/white to greyscale
     if image.mode != "L":
         image = image.convert("L")
     # Resize to lcd size using bicubic sampling
@@ -144,7 +163,9 @@ def get_screen_blob(previous_frame: bytearray, this_frame: bytearray):
     return outputData
 
 
-def animated_image_to_bytes(imageIn: Image, negative: bool, dither: bool, threshold: int, flip_frames):
+def animated_image_to_bytes(
+    imageIn: Image, negative: bool, dither: bool, threshold: int, flip_frames
+):
     """
     Convert the gif into our best effort startup animation
     We are delta-encoding on a byte by byte basis
@@ -175,7 +196,9 @@ def animated_image_to_bytes(imageIn: Image, negative: bool, dither: bool, thresh
         else:
             delta = frameDuration_ms / frameTiming
             if delta > 1.05 or delta < 0.95:
-                print(f"ERROR: You have a frame that is different to the first frame time. Mixed rates are not supported")
+                print(
+                    f"ERROR: You have a frame that is different to the first frame time. Mixed rates are not supported"
+                )
                 sys.exit(-1)
     print(f"Found {len(frameData)} frames, interval {frameTiming}ms")
     frameTiming = frameTiming / 5
@@ -183,7 +206,9 @@ def animated_image_to_bytes(imageIn: Image, negative: bool, dither: bool, thresh
         newTiming = max(frameTiming, 1)
         newTiming = min(newTiming, 254)
 
-        print(f"Inter frame delay {frameTiming} is out of range, and is being adjusted to {newTiming*5}")
+        print(
+            f"Inter frame delay {frameTiming} is out of range, and is being adjusted to {newTiming*5}"
+        )
         frameTiming = newTiming
 
     # We have now mangled the image into our framebuffers
@@ -217,7 +242,7 @@ def animated_image_to_bytes(imageIn: Image, negative: bool, dither: bool, thresh
 
 def img2hex(
     input_filename,
-    device_model_name:str,
+    device_model_name: str,
     preview_filename=None,
     threshold=128,
     dither=False,
@@ -229,13 +254,13 @@ def img2hex(
     """
     Convert 'input_filename' image file into Intel hex format with data
         formatted for display on  LCD and file object.
-    Input image is converted from color or grayscale to black-and-white,
+    Input image is converted from color or greyscale to black-and-white,
         and resized to fit  LCD screen as necessary.
     Optionally write resized/thresholded/black-and-white preview image
         to file specified by name.
-    Optional `threshold' argument 8 bit value; grayscale pixels greater than
+    Optional `threshold' argument 8 bit value; greyscale pixels greater than
         this become 1 (white) in output, less than become 0 (black).
-    Unless optional `dither', in which case PIL grayscale-to-black/white
+    Unless optional `dither', in which case PIL greyscale-to-black/white
         dithering algorithm used.
     Optional `negative' inverts black/white regardless of input image type
         or other options.
@@ -249,13 +274,15 @@ def img2hex(
             raise IOError('error reading image file "{}": {}'.format(input_filename, e))
 
         if getattr(image, "is_animated", False):
-            data = animated_image_to_bytes(image, negative, dither, threshold,flip)
+            data = animated_image_to_bytes(image, negative, dither, threshold, flip)
         else:
             if flip:
                 image = image.rotate(180)
             # magic/required header
             data = [DATA_PROGRAMMED_MARKER, 0x00]  # Timing value of 0
-            image_bytes = still_image_to_bytes(image, negative, dither, threshold, preview_filename)
+            image_bytes = still_image_to_bytes(
+                image, negative, dither, threshold, preview_filename
+            )
             data.extend(get_screen_blob([0] * LCD_NUM_BYTES, image_bytes))
 
     # Pad up to the full page size
@@ -265,7 +292,12 @@ def img2hex(
 
     # Set device settings depending on input `-m` argument
     device_name = device_model_name.lower()
-    if device_name == "miniware" or device_name == "ts100" or device_name == "ts80" or device_name == "ts80p":
+    if (
+        device_name == "miniware"
+        or device_name == "ts100"
+        or device_name == "ts80"
+        or device_name == "ts80p"
+    ):
         deviceSettings = MiniwareSettings
     elif device_name == "pinecilv1" or device_name == "pinecil":
         deviceSettings = PinecilSettings
@@ -282,25 +314,31 @@ def img2hex(
         sys.exit(-1)
 
     # Split name from extension so we can mangle in the _L suffix for flipped images
-    split_name = os.path.splitext( os.path.basename(input_filename))
+    split_name = os.path.splitext(os.path.basename(input_filename))
 
     if flip:
         base = split_name[0]
         ext = split_name[1]
-        base =base+"_L"
-        split_name = [base,ext]
-    output_name = output_filename_base +split_name[0] +split_name[1]
+        base = base + "_L"
+        split_name = [base, ext]
+    output_name = output_filename_base + split_name[0] + split_name[1]
 
     DFUOutput.writeFile(
         output_name + ".dfu",
         data,
         deviceSettings.IMAGE_ADDRESS,
         deviceSettings.DFU_TARGET_NAME,
-        deviceSettings.DFU_PINECIL_ALT,
-        deviceSettings.DFU_PINECIL_PRODUCT,
-        deviceSettings.DFU_PINECIL_VENDOR,
+        deviceSettings.DFU_ALT,
+        deviceSettings.DFU_PRODUCT,
+        deviceSettings.DFU_VENDOR,
     )
-    HexOutput.writeFile(output_name + ".hex", data, deviceSettings.IMAGE_ADDRESS)
+
+    HexOutput.writeFile(
+        output_name + ".hex",
+        data,
+        deviceSettings.IMAGE_ADDRESS,
+        deviceSettings.MINIMUM_HEX_SIZE,
+    )
 
 
 def parse_commandline():
@@ -332,20 +370,21 @@ def parse_commandline():
         help="photo negative: exchange black and white in output",
     )
 
-
     parser.add_argument(
         "-t",
         "--threshold",
         type=zero_to_255,
         default=128,
-        help="0 to 255: gray (or color converted to gray) " "above this becomes white, below becomes black; " "ignored if using --dither",
+        help="0 to 255: grey (or color converted to grey) "
+        "above this becomes white, below becomes black; "
+        "ignored if using --dither",
     )
 
     parser.add_argument(
         "-d",
         "--dither",
         action="store_true",
-        help="use dithering (speckling) to convert gray or " "color to black and white",
+        help="use dithering (speckling) to convert grey or " "color to black and white",
     )
 
     parser.add_argument(
@@ -355,7 +394,7 @@ def parse_commandline():
         help="generate a logo erase file instead of a logo",
     )
 
-    parser.add_argument("-m", "--model",  help="device model name")
+    parser.add_argument("-m", "--model", help="device model name")
     parser.add_argument(
         "-v",
         "--version",
@@ -372,12 +411,13 @@ if __name__ == "__main__":
     args = parse_commandline()
 
     if args.preview and os.path.exists(args.preview) and not args.force:
-        sys.stderr.write('Won\'t overwrite existing file "{}" (use --force ' "option to override)\n".format(args.preview))
+        sys.stderr.write(
+            'Won\'t overwrite existing file "{}" (use --force '
+            "option to override)\n".format(args.preview)
+        )
         sys.exit(1)
 
-
     print(f"Converting {args.input_filename} => {args.output_filename}")
-
 
     img2hex(
         input_filename=args.input_filename,
@@ -388,7 +428,7 @@ if __name__ == "__main__":
         dither=args.dither,
         negative=args.negative,
         make_erase_image=args.erase,
-        flip = False,
+        flip=False,
     )
 
     img2hex(
@@ -400,5 +440,5 @@ if __name__ == "__main__":
         dither=args.dither,
         negative=args.negative,
         make_erase_image=args.erase,
-        flip = True,
+        flip=True,
     )

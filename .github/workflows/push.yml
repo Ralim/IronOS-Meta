@@ -14,7 +14,6 @@ jobs:
           - model: "pinecilv1"
           - model: "pinecilv2"
           - model: "mhp30"
-          - model: "ts101"
           - model: "s60"
       fail-fast: true
 

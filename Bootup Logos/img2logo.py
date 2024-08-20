@@ -4,6 +4,7 @@ from __future__ import division
 import argparse
 import copy
 import os, sys
+from typing import Optional
 from intelhex import IntelHex
 from output_hex import HexOutput
 from output_dfu import DFUOutput
@@ -243,7 +244,7 @@ def animated_image_to_bytes(
 def img2hex(
     input_filename,
     device_model_name: str,
-    merge_hex_file: str | None,
+    merge_hex_file: Optional[str],
     preview_filename=None,
     threshold=128,
     dither=False,

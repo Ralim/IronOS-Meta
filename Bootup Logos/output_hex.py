@@ -65,13 +65,6 @@ class HexOutput:
             def write(generator):
                 output.write("".join(generator))
 
-            if len(data) % cls.INTELHEX_BYTES_PER_LINE != 0:
-                raise ValueError(
-                    "Program error: Size of LCD data is not evenly divisible by {}".format(
-                        cls.INTELHEX_BYTES_PER_LINE
-                    )
-                )
-
             address_lo = data_address & 0xFFFF
             address_hi = (data_address >> 16) & 0xFFFF
 

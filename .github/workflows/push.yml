@@ -19,7 +19,7 @@ jobs:
 
     steps:
       - name: Install dependencies (apk)
-        run: apk add --no-cache git python3 py3-pip zlib py3-pillow
+        run: apk add --no-cache git python3 py3-pip zlib py3-pillow py3-intelhex
 
       - uses: actions/checkout@v3
         with:

@@ -50,7 +50,7 @@ class S60Settings:
 
 
 class TS101Settings:
-    IMAGE_ADDRESS = 0x08000000 + (126 * 1024)
+    IMAGE_ADDRESS = 0x08000000 + (99 * 1024)
     DFU_TARGET_NAME = b"IronOS-dfu"
     DFU_ALT = 0
     DFU_VENDOR = 0x1209
@@ -306,6 +306,11 @@ def img2hex(
         deviceSettings = Pinecilv2Settings
     elif device_name == "ts101":
         deviceSettings = TS101Settings
+        if merge_hex_file is None:
+            print(
+                "For the TS101 for compatibility with bugs in the Miniware Loader, you must merge the main firmware with the logo to flash it"
+            )
+            exit(1)
     elif device_name == "s60":
         deviceSettings = S60Settings
     elif device_name == "mhp30":
@@ -359,7 +364,7 @@ def read_merge_write(
     # Merge in the image data, error if collision
     base_hex_file.merge(logo_hex_file, overlap="error")
     binary_base = base_hex_file.minaddr()
-    base_hex_file.padding = 0xA5
+    base_hex_file.padding = 0xFF
     binary_blob = base_hex_file.tobinarray(start=binary_base)
     print(
         f"Post-merge output image starts at 0x{binary_base:x}, len {len(binary_blob)}"
@@ -373,13 +378,17 @@ def read_merge_write(
         deviceSettings.DFU_PRODUCT,
         deviceSettings.DFU_VENDOR,
     )
+    # Gap fill any missing segments
+    # This is required for the TS101 bootloader
+    segments = base_hex_file.segments()
+    for seg_pair in zip(segments, segments[1:]):
+        start = seg_pair[0][1]
+        end = seg_pair[1][0]
+        filler = [0xFE] * (end - start)
+        base_hex_file.frombytes(filler, start)
 
-    HexOutput.writeFile(
-        output_filename + ".hex",
-        binary_blob,
-        binary_base,
-        deviceSettings.MINIMUM_HEX_SIZE,
-    )
+    with open(output_filename + ".hex", "w") as output:
+        base_hex_file.write_hex_file(output, eolstyle="CRLF")
 
 
 def parse_commandline():

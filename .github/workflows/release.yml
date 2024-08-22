@@ -13,7 +13,7 @@ jobs:
 
     steps:
       - name: Install dependencies (apk)
-        run: sudo apt update && sudo apt-get install -y git python3 python3-pillow py3-intelhex
+        run: sudo apt update && sudo apt-get install -y git python3 python3-pillow python3-intelhex
 
       - uses: actions/checkout@v3
         with:

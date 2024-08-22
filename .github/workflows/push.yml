@@ -14,13 +14,12 @@ jobs:
           - model: "pinecilv1"
           - model: "pinecilv2"
           - model: "mhp30"
-          - model: "ts101"
           - model: "s60"
       fail-fast: true
 
     steps:
       - name: Install dependencies (apk)
-        run: apk add --no-cache git python3 py3-pip zlib py3-pillow
+        run: apk add --no-cache git python3 py3-pip zlib py3-pillow py3-intelhex
 
       - uses: actions/checkout@v3
         with:

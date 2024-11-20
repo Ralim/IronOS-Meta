@@ -54,6 +54,7 @@ This just overwrites individual bytes in the output buffer.
 |![Alt text](https://github.com/Ralim/IronOS-Meta/blob/main/Bootup%20Logos/Images/wwii_kilroy.png)|wwii_kilroy.png||
 |![Alt text](https://github.com/Ralim/IronOS-Meta/blob/main/Bootup%20Logos/Images/hack_the_planet.png)|hack_the_planet.png||
 |![No. 2 Pinecil](https://github.com/Ralim/IronOS-Meta/blob/main/Bootup%20Logos/Images/no2pinecil.png)|no2pinecil.png||
+|![Lain](https://github.com/Ralim/IronOS-Meta/blob/main/Bootup%20Logos/Images/lain.png)|lain.png||
 
 **Animated logos**
 |Logo \*          |Filename       |Note   |
@@ -64,5 +65,6 @@ This just overwrites individual bytes in the output buffer.
 |![Alt text](https://github.com/Ralim/IronOS-Meta/blob/main/Bootup%20Logos/Images/hack_the_planet.gif)|hack_the_planet.gif||
 |![No. 2 Pinecil](https://github.com/Ralim/IronOS-Meta/blob/main/Bootup%20Logos/Images/no2pinecil.gif)|no2pinecil.gif||
 |![Nyancat](https://github.com/Ralim/IronOS-Meta/blob/main/Bootup%20Logos/Images/nyan.gif)|nyan.gif||
+|![Lain](https://github.com/Ralim/IronOS-Meta/blob/main/Bootup%20Logos/Images/lain.gif)|lain.gif||
 
 _* Click the individual logo to see its animation, if you missed it here._

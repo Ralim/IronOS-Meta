@@ -1,6 +1,6 @@
 # Boot up Logos
 
-## Boot up logo's are logos or animations shown on boot of IronOS
+## Boot up logos are logos or animations shown on boot of IronOS
 
 These are programmed into the device just like the normal firmware.
 They can be (re)programmed as many times as desired, after flashing the normal firmware.

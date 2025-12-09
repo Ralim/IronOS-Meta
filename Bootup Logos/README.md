@@ -45,7 +45,7 @@ This just overwrites individual bytes in the output buffer.
 |![Alt text](https://github.com/Ralim/IronOS-Meta/blob/main/Bootup%20Logos/Images/majorTom.png)|majorTom.png||
 |![Alt text](https://github.com/Ralim/IronOS-Meta/blob/main/Bootup%20Logos/Images/open_sw_hw_IronOS_logos.png)|open_sw_hw_IronOS_logos.png||
 |![Pinecil](https://github.com/Ralim/IronOS-Meta/blob/main/Bootup%20Logos/Images/Pinecil.png)|Pinecil.png||
-|![PinecilV2](https://github.com/Ralim/IronOS-Meta/blob/main/Bootup%20Logos/Images/PinecilV2.png)|PinecilV2.png||
+|![PinecilV2](https://github.com/lucky830/IronOS-Meta/blob/main/Bootup%20Logos/Images/PinecilV2.png)|PinecilV2.png||
 |![Alt text](https://github.com/Ralim/IronOS-Meta/blob/main/Bootup%20Logos/Images/science.png)|science.png||
 |![Alt text](https://github.com/Ralim/IronOS-Meta/blob/main/Bootup%20Logos/Images/skulls.png)|skulls.png||
 |![TS100](https://github.com/Ralim/IronOS-Meta/blob/main/Bootup%20Logos/Images/TS100.png)|TS100.png||
@@ -62,7 +62,7 @@ This just overwrites individual bytes in the output buffer.
 |:-------------:|:-------------:|:-----:|
 |![Alt text](https://github.com/Ralim/IronOS-Meta/blob/main/Bootup%20Logos/Images/CRT_horror_vacui.gif) |CRT_horror_vacui.gif||
 |![IronOS](https://github.com/Ralim/IronOS-Meta/blob/main/Bootup%20Logos/Images/IronOS.gif)|IronOS.gif||
-|![glitch](https://github.com/Ralim/IronOS-Meta/blob/main/Bootup%20Logos/Images/glitch.gif)|glitch.gif||
+|![glitch](https://github.com/lucky830/IronOS-Meta/blob/main/Bootup%20Logos/Images/glitch.gif)|glitch.gif||
 |![Alt text](https://github.com/Ralim/IronOS-Meta/blob/main/Bootup%20Logos/Images/terminal.gif)|terminal.gif||
 |![Alt text](https://github.com/Ralim/IronOS-Meta/blob/main/Bootup%20Logos/Images/hack_the_planet.gif)|hack_the_planet.gif||
 |![No. 2 Pinecil](https://github.com/Ralim/IronOS-Meta/blob/main/Bootup%20Logos/Images/no2pinecil.gif)|no2pinecil.gif||

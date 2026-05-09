@@ -1,13 +1,16 @@
 #!/usr/bin/env python
 # coding=utf-8
 from __future__ import division
+
 import argparse
 import copy
-import os, sys
+import os
+import sys
 from typing import Optional
+
 from intelhex import IntelHex
-from output_hex import HexOutput
 from output_dfu import DFUOutput
+from output_hex import HexOutput
 
 try:
     from PIL import Image, ImageOps
@@ -208,7 +211,7 @@ def animated_image_to_bytes(
         newTiming = min(newTiming, 254)
 
         print(
-            f"Inter frame delay {frameTiming} is out of range, and is being adjusted to {newTiming*5}"
+            f"Inter frame delay {frameTiming} is out of range, and is being adjusted to {newTiming * 5}"
         )
         frameTiming = newTiming
 
@@ -226,7 +229,7 @@ def animated_image_to_bytes(
     Format for each frame block is:
     [length][ [delta block][delta block][delta block][delta block] ]
     Where [delta block] is just [index,new value]
-    
+
     OR
     [0xFF][Full frame data]
     """
@@ -239,6 +242,35 @@ def animated_image_to_bytes(
         outputData.extend(frameBlob)
     print(f"Total size used: {len(outputData)} of 1024 bytes")
     return outputData
+
+
+def device_settings_from_name(device_model_name: str, merge_hex_file: Optional[str]):
+    device_name = device_model_name.lower()
+    if (
+        device_name == "miniware"
+        or device_name == "ts100"
+        or device_name == "ts80"
+        or device_name == "ts80p"
+    ):
+        return MiniwareSettings
+    elif device_name == "pinecilv1" or device_name == "pinecil":
+        return PinecilSettings
+    elif device_name == "pinecilv2":
+        return Pinecilv2Settings
+    elif device_name == "ts101":
+        if merge_hex_file is None:
+            print(
+                "For the TS101 for compatibility with bugs in the Miniware Loader, you must merge the main firmware with the logo to flash it"
+            )
+            exit(1)
+        return TS101Settings
+    elif device_name == "s60" or device_name == "s60p" or device_name == "t55":
+        return S60Settings
+    elif device_name == "mhp30":
+        return MHP30Settings
+    else:
+        print("Could not determine device type")
+        sys.exit(-1)
 
 
 def img2hex(
@@ -293,32 +325,7 @@ def img2hex(
         data.extend(pad)
 
     # Set device settings depending on input `-m` argument
-    device_name = device_model_name.lower()
-    if (
-        device_name == "miniware"
-        or device_name == "ts100"
-        or device_name == "ts80"
-        or device_name == "ts80p"
-    ):
-        deviceSettings = MiniwareSettings
-    elif device_name == "pinecilv1" or device_name == "pinecil":
-        deviceSettings = PinecilSettings
-    elif device_name == "pinecilv2":
-        deviceSettings = Pinecilv2Settings
-    elif device_name == "ts101":
-        deviceSettings = TS101Settings
-        if merge_hex_file is None:
-            print(
-                "For the TS101 for compatibility with bugs in the Miniware Loader, you must merge the main firmware with the logo to flash it"
-            )
-            exit(1)
-    elif device_name == "s60":
-        deviceSettings = S60Settings
-    elif device_name == "mhp30":
-        deviceSettings = MHP30Settings
-    else:
-        print("Could not determine device type")
-        sys.exit(-1)
+    deviceSettings = device_settings_from_name(device_model_name, merge_hex_file)
 
     # Split name from extension so we can mangle in the _L suffix for flipped images
     split_name = os.path.splitext(os.path.basename(input_filename))
@@ -441,7 +448,7 @@ def parse_commandline():
         "-d",
         "--dither",
         action="store_true",
-        help="use dithering (speckling) to convert grey or " "color to black and white",
+        help="use dithering (speckling) to convert grey or color to black and white",
     )
 
     parser.add_argument(
@@ -464,7 +471,6 @@ def parse_commandline():
 
 
 if __name__ == "__main__":
-
     args = parse_commandline()
 
     if args.preview and os.path.exists(args.preview) and not args.force:

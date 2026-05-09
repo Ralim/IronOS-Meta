@@ -15,6 +15,8 @@ jobs:
           - model: "pinecilv2"
           - model: "mhp30"
           - model: "s60"
+          - model: "s60p"
+          - model: "t55"
       fail-fast: true
 
     steps:

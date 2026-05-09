@@ -9,13 +9,13 @@ on:
 jobs:
   release:
     name: "Release"
-    runs-on: "ubuntu-22.04"
+    runs-on: "ubuntu-latest"
 
     steps:
       - name: Install dependencies (apk)
         run: sudo apt update && sudo apt-get install -y git python3 python3-pillow python3-intelhex
 
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v6
         with:
           submodules: true
 
@@ -25,7 +25,9 @@ jobs:
           mkdir -p /tmp/pinecilv2 && \
           mkdir -p /tmp/miniware && \
           mkdir -p /tmp/mhp30 && \
-          mkdir -p /tmp/s60
+          mkdir -p /tmp/s60 && \
+          mkdir -p /tmp/s60p && \
+          mkdir -p /tmp/t55
 
       - name: build all files for the device
         run: |
@@ -34,7 +36,9 @@ jobs:
           ./run.sh /tmp/pinecilv2/ -m pinecilv2 && \
           ./run.sh /tmp/miniware/ -m miniware && \
           ./run.sh /tmp/mhp30/ -m mhp30 && \
-          ./run.sh /tmp/s60/ -m s60
+          ./run.sh /tmp/s60/ -m s60 && \
+          ./run.sh /tmp/s60p/ -m s60p && \
+          ./run.sh /tmp/t55/ -m t55
 
       - name: build logo erase file
         run: |
@@ -43,7 +47,9 @@ jobs:
           python3 img2logo.py -E erase_stored_image /tmp/pinecilv2/ -m pinecilv2 && \
           python3 img2logo.py -E erase_stored_image /tmp/miniware/ -m miniware && \
           python3 img2logo.py -E erase_stored_image /tmp/mhp30/ -m mhp30 && \
-          python3 img2logo.py -E erase_stored_image /tmp/s60/ -m s60
+          python3 img2logo.py -E erase_stored_image /tmp/s60/ -m s60 && \
+          python3 img2logo.py -E erase_stored_image /tmp/s60p/ -m s60p && \
+          python3 img2logo.py -E erase_stored_image /tmp/t55/ -m t55
 
       - name: compress logo files
         run: |
@@ -51,7 +57,9 @@ jobs:
           zip -rj miniware.zip /tmp/miniware/* && \
           zip -rj pinecilv2.zip /tmp/pinecilv2/* && \
           zip -rj mhp30.zip /tmp/mhp30/* && \
-          zip -rj s60_s60p.zip /tmp/s60/*
+          zip -rj s60.zip /tmp/s60/* && \
+          zip -rj s60p.zip /tmp/s60p/* && \
+          zip -rj t55.zip /tmp/t55/*
 
       - uses: "marvinpinto/action-automatic-releases@latest"
         with:

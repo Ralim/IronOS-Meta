@@ -81,7 +81,9 @@ class PinecilSettings:
 
 
 class Pinecilv2Settings:
-    IMAGE_ADDRESS = 1016 * 1024  # its 2 4k erase pages inset
+    IMAGE_ADDRESS = 0x23000000 + (
+        1016 * 1024
+    )  # its 2 4k erase pages inset from the end, + XIP offset
     DFU_TARGET_NAME = b"Pinecilv2"
     DFU_ALT = 0
     DFU_VENDOR = 0x28E9  # These are ignored by blisp so doesnt matter what we use
